@@ -1,0 +1,13 @@
+class: MeetingMinutes
+table: meeting_minutes
+fields:
+  societyId: int
+  meetingTitle: String
+  meetingType: String
+  meetingDate: DateTime
+  agenda: String
+  minutesSummary: String
+  attendeesCount: int
+  documentUrl: String?
+  recordedByName: String
+  createdAt: DateTime

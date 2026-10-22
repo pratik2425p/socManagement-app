@@ -1,0 +1,4 @@
+enum: PollStatus
+values:
+  - active
+  - closed

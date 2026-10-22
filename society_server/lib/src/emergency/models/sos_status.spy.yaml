@@ -1,0 +1,5 @@
+enum: SosStatus
+values:
+  - active
+  - acknowledged
+  - resolved

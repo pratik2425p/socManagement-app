@@ -1,0 +1,8 @@
+class: PollVote
+table: poll_vote
+fields:
+  pollId: int
+  flatNumber: String
+  voterName: String
+  optionId: int
+  votedAt: DateTime

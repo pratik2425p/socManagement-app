@@ -1,0 +1,14 @@
+class: SocietyPoll
+table: society_poll
+fields:
+  societyId: int
+  title: String
+  description: String
+  category: String
+  status: PollStatus
+  startDate: DateTime
+  endDate: DateTime
+  totalEligibleFlats: int
+  totalVotesCast: int
+  createdByName: String
+  createdAt: DateTime

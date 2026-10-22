@@ -1,0 +1,8 @@
+class: SaasMetricSummary
+fields:
+  totalSocieties: int
+  activeSubscriptions: int
+  trialSocieties: int
+  totalManagedFlats: int
+  monthlyRecurringRevenue: double
+  averageRevenuePerSociety: double

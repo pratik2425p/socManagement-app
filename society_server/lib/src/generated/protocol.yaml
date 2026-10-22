@@ -31,6 +31,16 @@ society:
   - createFlat:
   - getSocietyUsers:
   - createSocietyUser:
+document:
+  - getDocuments:
+  - uploadDocument:
+  - getMeetingMinutes:
+  - recordMeetingMinutes:
+sos:
+  - raiseSosAlert:
+  - getActiveSosAlerts:
+  - acknowledgeSos:
+  - resolveSos:
 greeting:
   - hello:
 maintenance:
@@ -38,6 +48,16 @@ maintenance:
   - createBill:
   - recordPayment:
   - getPayments:
+poll:
+  - getPolls:
+  - getPollOptions:
+  - createPoll:
+  - castVote:
+saasAdmin:
+  - getMetricSummary:
+  - getAllSubscriptions:
+  - createSubscription:
+  - updateSubscriptionStatus:
 visitor:
   - getVisitors:
   - createVisitorEntry:

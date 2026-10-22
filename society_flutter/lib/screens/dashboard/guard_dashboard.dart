@@ -33,6 +33,101 @@ class _GuardDashboardState extends State<GuardDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ACTIVE SOS EMERGENCY BANNER
+          if (state.activeSosAlerts.isNotEmpty) ...[
+            ...state.activeSosAlerts.map((sos) => Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.dangerRed, width: 2),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.warning, color: AppTheme.dangerRed, size: 28),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'EMERGENCY SOS: FLAT ${sos.flatNumber}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: AppTheme.dangerRed,
+                                  ),
+                                ),
+                                Text(
+                                  'Type: ${sos.emergencyType.name.toUpperCase()} • ${sos.raisedByName}',
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.dangerRed,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              sos.status.name.toUpperCase(),
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (sos.description != null) ...[
+                        const SizedBox(height: 8),
+                        Text('Note: ${sos.description!}', style: const TextStyle(fontSize: 13)),
+                      ],
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          if (sos.status == SosStatus.active)
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.directions_run),
+                                label: const Text('Acknowledge & Dispatch'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.dangerRed,
+                                ),
+                                onPressed: () {
+                                  state.acknowledgeSos(sos.id!, 'Guard Santosh Gawde');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Guard Dispatched to Flat! Alert acknowledged.')),
+                                  );
+                                },
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.check_circle),
+                                label: const Text('Mark Emergency Resolved'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.successGreen,
+                                ),
+                                onPressed: () {
+                                  state.resolveSos(sos.id!, 'Guard Santosh', 'Situation safe and attended.');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Emergency Cleared & Resolved.')),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+
           // Gate Banner
           Container(
             padding: const EdgeInsets.all(16),

@@ -1,0 +1,15 @@
+class: SosAlert
+table: sos_alert
+fields:
+  societyId: int
+  flatNumber: String
+  raisedByName: String
+  emergencyType: EmergencyType
+  description: String?
+  status: SosStatus
+  acknowledgedByName: String?
+  acknowledgedAt: DateTime?
+  resolvedByName: String?
+  resolvedAt: DateTime?
+  resolutionNotes: String?
+  raisedAt: DateTime

@@ -183,6 +183,44 @@ class ResidentDashboard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickCard(
+                  icon: Icons.how_to_vote,
+                  title: 'Resolutions',
+                  subtitle: '1 Flat = 1 Vote',
+                  color: AppTheme.primaryNavy,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/polling');
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickCard(
+                  icon: Icons.folder_shared,
+                  title: 'Doc Vault',
+                  subtitle: 'Bye-Laws & Audits',
+                  color: const Color(0xFF4F46E5),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/documents');
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickCard(
+                  icon: Icons.sos,
+                  title: 'EMERGENCY',
+                  subtitle: 'Instant Alarm',
+                  color: AppTheme.dangerRed,
+                  onTap: () => _showSosDialog(context),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
 
           // Maintenance Bill Summary
@@ -633,6 +671,91 @@ class ResidentDashboard extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSosDialog(BuildContext context) {
+    EmergencyType type = EmergencyType.medical;
+    final noteCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFFFEF2F2),
+          title: const Row(
+            children: [
+              Icon(Icons.warning, color: AppTheme.dangerRed, size: 28),
+              SizedBox(width: 8),
+              Text(
+                'TRIGGER EMERGENCY SOS',
+                style: TextStyle(color: AppTheme.dangerRed, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'This will immediately sound an audible siren at Main Security Gate and alert the Society Chairman.',
+                  style: TextStyle(fontSize: 13, color: AppTheme.darkSlate),
+                ),
+                const SizedBox(height: 14),
+                DropdownButtonFormField<EmergencyType>(
+                  initialValue: type,
+                  decoration: const InputDecoration(labelText: 'Emergency Category', fillColor: Colors.white),
+                  items: const [
+                    DropdownMenuItem(value: EmergencyType.medical, child: Text('🚑 Medical Emergency (Ambulance)')),
+                    DropdownMenuItem(value: EmergencyType.fire, child: Text('🚒 Fire Outbreak')),
+                    DropdownMenuItem(value: EmergencyType.liftStuck, child: Text('🛗 Lift Stuck with Passengers')),
+                    DropdownMenuItem(value: EmergencyType.securityThreat, child: Text('🚨 Intruder / Security Threat')),
+                    DropdownMenuItem(value: EmergencyType.other, child: Text('⚠️ Other Urgent Emergency')),
+                  ],
+                  onChanged: (val) => setDialogState(() => type = val!),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: noteCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Quick Note (e.g. 3rd floor lobby)',
+                    fillColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.emergency, color: Colors.white),
+              label: const Text('SEND SOS ALARM NOW'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.dangerRed,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onPressed: () {
+                state.triggerSos(
+                  type: type,
+                  note: noteCtrl.text.isEmpty ? null : noteCtrl.text,
+                );
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    backgroundColor: AppTheme.dangerRed,
+                    duration: Duration(seconds: 5),
+                    content: Text('🚨 EMERGENCY SOS SENT! Security Guard dispatched to Flat A-304.'),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

@@ -6,6 +6,9 @@ import 'dashboard/resident_dashboard.dart';
 import 'dashboard/guard_dashboard.dart';
 import 'dashboard/chairman_dashboard.dart';
 import 'dashboard/accountant_dashboard.dart';
+import 'dashboard/saas_admin_dashboard.dart';
+import 'documents/document_vault_screen.dart';
+import 'polling/polling_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final SocietyState state;
@@ -44,7 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              state.societyName,
+              state.currentRole == UserRole.admin
+                  ? 'SaaS Super Admin Platform'
+                  : state.societyName,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -54,7 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Icon(Icons.circle, size: 8, color: AppTheme.successGreen),
                 const SizedBox(width: 4),
                 Text(
-                  'Connected to Serverpod Cloud',
+                  state.currentRole == UserRole.admin
+                      ? 'Global Cloud Multi-Tenant Engine'
+                      : 'Connected to Serverpod Cloud',
                   style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],
@@ -62,6 +69,31 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          // Quick shortcuts to Polling & Documents
+          IconButton(
+            tooltip: 'Democratic Polling & Voting',
+            icon: const Icon(Icons.how_to_vote_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => PollingScreen(state: state),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Document Vault & AGM Minutes',
+            icon: const Icon(Icons.folder_shared_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => DocumentVaultScreen(state: state),
+                ),
+              );
+            },
+          ),
           // Role Switcher Dropdown in App Bar
           Container(
             margin: const EdgeInsets.only(right: 12),
@@ -97,6 +129,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: UserRole.accountant,
                     child: Text('📊 Accountant (Ledger)'),
                   ),
+                  DropdownMenuItem(
+                    value: UserRole.admin,
+                    child: Text('🌐 SaaS Super Admin'),
+                  ),
                 ],
                 onChanged: (role) {
                   if (role != null) {
@@ -127,13 +163,28 @@ class _HomeScreenState extends State<HomeScreen> {
         return ChairmanDashboard(state: widget.state);
       case UserRole.accountant:
         return AccountantDashboard(state: widget.state);
-      default:
-        return ResidentDashboard(state: widget.state);
+      case UserRole.admin:
+        return SaasAdminDashboard(state: widget.state);
     }
   }
 
   Widget _buildBottomNav() {
     final role = widget.state.currentRole;
+
+    if (role == UserRole.admin) {
+      return BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (idx) => setState(() => _currentIndex = idx),
+        selectedItemColor: const Color(0xFF4338CA),
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize), label: 'SaaS Overview'),
+          BottomNavigationBarItem(icon: Icon(Icons.business_center), label: 'Subscriptions'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Revenue & Billing'),
+        ],
+      );
+    }
 
     if (role == UserRole.guard) {
       return BottomNavigationBar(
@@ -184,15 +235,29 @@ class _HomeScreenState extends State<HomeScreen> {
     // Default Resident Nav
     return BottomNavigationBar(
       currentIndex: _currentIndex,
-      onTap: (idx) => setState(() => _currentIndex = idx),
+      onTap: (idx) {
+        if (idx == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (ctx) => DocumentVaultScreen(state: widget.state)),
+          );
+        } else if (idx == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (ctx) => PollingScreen(state: widget.state)),
+          );
+        } else {
+          setState(() => _currentIndex = idx);
+        }
+      },
       selectedItemColor: AppTheme.primaryNavy,
       unselectedItemColor: Colors.grey,
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: 'Gate Passes'),
+        BottomNavigationBarItem(icon: Icon(Icons.folder_shared_outlined), label: 'Doc Vault'),
         BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Maintenance'),
-        BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Helpdesk'),
+        BottomNavigationBarItem(icon: Icon(Icons.how_to_vote_outlined), label: 'Polling'),
       ],
     );
   }

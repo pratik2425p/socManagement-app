@@ -17,6 +17,50 @@ class ChairmanDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ACTIVE SOS ALERT BANNER
+          if (state.activeSosAlerts.isNotEmpty) ...[
+            ...state.activeSosAlerts.map((sos) => Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.dangerRed, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.emergency, color: AppTheme.dangerRed, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '🚨 EMERGENCY SOS: FLAT ${sos.flatNumber}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.dangerRed, fontSize: 15),
+                            ),
+                            Text(
+                              '${sos.emergencyType.name.toUpperCase()} • ${sos.raisedByName} ${sos.description != null ? "• ${sos.description}" : ""}',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.dangerRed),
+                        onPressed: () {
+                          state.resolveSos(sos.id!, 'Chairman Anand Rao', 'Situation monitored and resolved.');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Emergency Cleared by Chairman.')),
+                          );
+                        },
+                        child: const Text('Clear SOS'),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+
           // Chairman Greeting Card
           Container(
             padding: const EdgeInsets.all(18),

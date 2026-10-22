@@ -1,0 +1,15 @@
+class: SocietySubscription
+table: society_subscription
+fields:
+  societyId: int
+  societyName: String
+  tier: SubscriptionTier
+  flatCount: int
+  ratePerFlat: double
+  monthlyTotal: double
+  billingCycle: String
+  status: String
+  nextRenewalDate: DateTime
+  contactEmail: String
+  contactPhone: String
+  createdAt: DateTime

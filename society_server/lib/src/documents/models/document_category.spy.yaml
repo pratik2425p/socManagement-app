@@ -1,0 +1,8 @@
+enum: DocumentCategory
+values:
+  - byeLaws
+  - auditReport
+  - meetingMinutes
+  - insurance
+  - circular
+  - legal

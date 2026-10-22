@@ -1,0 +1,7 @@
+enum: EmergencyType
+values:
+  - medical
+  - fire
+  - liftStuck
+  - securityThreat
+  - other

@@ -1,0 +1,12 @@
+class: SocietyDocument
+table: society_document
+fields:
+  societyId: int
+  title: String
+  description: String
+  category: DocumentCategory
+  fileUrl: String
+  fileSize: String
+  uploadedByName: String
+  isCommitteeOnly: bool
+  uploadedAt: DateTime

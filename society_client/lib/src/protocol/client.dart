@@ -34,16 +34,32 @@ import 'package:society_client/src/protocol/core/models/society.dart' as _i12;
 import 'package:society_client/src/protocol/core/models/flat.dart' as _i13;
 import 'package:society_client/src/protocol/core/models/society_user.dart'
     as _i14;
-import 'package:society_client/src/protocol/greetings/greeting.dart' as _i15;
-import 'package:society_client/src/protocol/maintenance/models/maintenance_bill.dart'
+import 'package:society_client/src/protocol/documents/models/society_document.dart'
+    as _i15;
+import 'package:society_client/src/protocol/documents/models/meeting_minutes.dart'
     as _i16;
-import 'package:society_client/src/protocol/maintenance/models/payment_record.dart'
+import 'package:society_client/src/protocol/emergency/models/sos_alert.dart'
     as _i17;
-import 'package:society_client/src/protocol/visitor/models/visitor_entry.dart'
-    as _i18;
-import 'package:society_client/src/protocol/visitor/models/visitor_status.dart'
+import 'package:society_client/src/protocol/greetings/greeting.dart' as _i18;
+import 'package:society_client/src/protocol/maintenance/models/maintenance_bill.dart'
     as _i19;
-import 'protocol.dart' as _i20;
+import 'package:society_client/src/protocol/maintenance/models/payment_record.dart'
+    as _i20;
+import 'package:society_client/src/protocol/polling/models/society_poll.dart'
+    as _i21;
+import 'package:society_client/src/protocol/polling/models/poll_status.dart'
+    as _i22;
+import 'package:society_client/src/protocol/polling/models/poll_option.dart'
+    as _i23;
+import 'package:society_client/src/protocol/saas_admin/models/saas_metric_summary.dart'
+    as _i24;
+import 'package:society_client/src/protocol/saas_admin/models/society_subscription.dart'
+    as _i25;
+import 'package:society_client/src/protocol/visitor/models/visitor_entry.dart'
+    as _i26;
+import 'package:society_client/src/protocol/visitor/models/visitor_status.dart'
+    as _i27;
+import 'protocol.dart' as _i28;
 
 /// {@category Endpoint}
 class EndpointAccounting extends _i1.EndpointRef {
@@ -481,6 +497,104 @@ class EndpointSociety extends _i1.EndpointRef {
       );
 }
 
+/// {@category Endpoint}
+class EndpointDocument extends _i1.EndpointRef {
+  EndpointDocument(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'document';
+
+  /// Fetch all society documents
+  _i2.Future<List<_i15.SocietyDocument>> getDocuments(
+    int societyId, {
+    required bool includeCommitteeOnly,
+  }) => caller.callServerEndpoint<List<_i15.SocietyDocument>>(
+    'document',
+    'getDocuments',
+    {
+      'societyId': societyId,
+      'includeCommitteeOnly': includeCommitteeOnly,
+    },
+  );
+
+  /// Upload a document (bye-laws, audit reports, insurance, etc.)
+  _i2.Future<_i15.SocietyDocument> uploadDocument(_i15.SocietyDocument doc) =>
+      caller.callServerEndpoint<_i15.SocietyDocument>(
+        'document',
+        'uploadDocument',
+        {'doc': doc},
+      );
+
+  /// Fetch meeting minutes (AGM / EGM / Managing Committee)
+  _i2.Future<List<_i16.MeetingMinutes>> getMeetingMinutes(int societyId) =>
+      caller.callServerEndpoint<List<_i16.MeetingMinutes>>(
+        'document',
+        'getMeetingMinutes',
+        {'societyId': societyId},
+      );
+
+  /// Record new meeting minutes
+  _i2.Future<_i16.MeetingMinutes> recordMeetingMinutes(
+    _i16.MeetingMinutes minutes,
+  ) => caller.callServerEndpoint<_i16.MeetingMinutes>(
+    'document',
+    'recordMeetingMinutes',
+    {'minutes': minutes},
+  );
+}
+
+/// {@category Endpoint}
+class EndpointSos extends _i1.EndpointRef {
+  EndpointSos(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'sos';
+
+  /// Trigger an immediate Emergency SOS Alert
+  _i2.Future<_i17.SosAlert> raiseSosAlert(_i17.SosAlert alert) =>
+      caller.callServerEndpoint<_i17.SosAlert>(
+        'sos',
+        'raiseSosAlert',
+        {'alert': alert},
+      );
+
+  /// Get active / un-resolved emergency alerts for guards & chairman
+  _i2.Future<List<_i17.SosAlert>> getActiveSosAlerts(int societyId) =>
+      caller.callServerEndpoint<List<_i17.SosAlert>>(
+        'sos',
+        'getActiveSosAlerts',
+        {'societyId': societyId},
+      );
+
+  /// Guard acknowledges emergency and dispatches help
+  _i2.Future<_i17.SosAlert?> acknowledgeSos(
+    int alertId,
+    String acknowledgedByName,
+  ) => caller.callServerEndpoint<_i17.SosAlert?>(
+    'sos',
+    'acknowledgeSos',
+    {
+      'alertId': alertId,
+      'acknowledgedByName': acknowledgedByName,
+    },
+  );
+
+  /// Resolve emergency after situation is safe
+  _i2.Future<_i17.SosAlert?> resolveSos(
+    int alertId,
+    String resolvedByName,
+    String resolutionNotes,
+  ) => caller.callServerEndpoint<_i17.SosAlert?>(
+    'sos',
+    'resolveSos',
+    {
+      'alertId': alertId,
+      'resolvedByName': resolvedByName,
+      'resolutionNotes': resolutionNotes,
+    },
+  );
+}
+
 /// This is an example endpoint that returns a greeting message through
 /// its [hello] method.
 /// {@category Endpoint}
@@ -491,8 +605,8 @@ class EndpointGreeting extends _i1.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i15.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i15.Greeting>(
+  _i2.Future<_i18.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i18.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -507,10 +621,10 @@ class EndpointMaintenance extends _i1.EndpointRef {
   String get name => 'maintenance';
 
   /// Get all maintenance bills for a society, optionally filtered by flat
-  _i2.Future<List<_i16.MaintenanceBill>> getBills(
+  _i2.Future<List<_i19.MaintenanceBill>> getBills(
     int societyId, {
     String? flatNumber,
-  }) => caller.callServerEndpoint<List<_i16.MaintenanceBill>>(
+  }) => caller.callServerEndpoint<List<_i19.MaintenanceBill>>(
     'maintenance',
     'getBills',
     {
@@ -520,28 +634,133 @@ class EndpointMaintenance extends _i1.EndpointRef {
   );
 
   /// Generate/Create a maintenance bill
-  _i2.Future<_i16.MaintenanceBill> createBill(_i16.MaintenanceBill bill) =>
-      caller.callServerEndpoint<_i16.MaintenanceBill>(
+  _i2.Future<_i19.MaintenanceBill> createBill(_i19.MaintenanceBill bill) =>
+      caller.callServerEndpoint<_i19.MaintenanceBill>(
         'maintenance',
         'createBill',
         {'bill': bill},
       );
 
   /// Record a payment against maintenance
-  _i2.Future<_i17.PaymentRecord> recordPayment(_i17.PaymentRecord payment) =>
-      caller.callServerEndpoint<_i17.PaymentRecord>(
+  _i2.Future<_i20.PaymentRecord> recordPayment(_i20.PaymentRecord payment) =>
+      caller.callServerEndpoint<_i20.PaymentRecord>(
         'maintenance',
         'recordPayment',
         {'payment': payment},
       );
 
   /// Get payment history for a society
-  _i2.Future<List<_i17.PaymentRecord>> getPayments(int societyId) =>
-      caller.callServerEndpoint<List<_i17.PaymentRecord>>(
+  _i2.Future<List<_i20.PaymentRecord>> getPayments(int societyId) =>
+      caller.callServerEndpoint<List<_i20.PaymentRecord>>(
         'maintenance',
         'getPayments',
         {'societyId': societyId},
       );
+}
+
+/// {@category Endpoint}
+class EndpointPoll extends _i1.EndpointRef {
+  EndpointPoll(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'poll';
+
+  /// Fetch polls with optional active/closed filter
+  _i2.Future<List<_i21.SocietyPoll>> getPolls(
+    int societyId, {
+    _i22.PollStatus? status,
+  }) => caller.callServerEndpoint<List<_i21.SocietyPoll>>(
+    'poll',
+    'getPolls',
+    {
+      'societyId': societyId,
+      'status': status,
+    },
+  );
+
+  /// Get options for a specific poll
+  _i2.Future<List<_i23.PollOption>> getPollOptions(int pollId) =>
+      caller.callServerEndpoint<List<_i23.PollOption>>(
+        'poll',
+        'getPollOptions',
+        {'pollId': pollId},
+      );
+
+  /// Chairman / Committee creates a new poll with options
+  _i2.Future<_i21.SocietyPoll> createPoll(
+    _i21.SocietyPoll poll,
+    List<String> options,
+  ) => caller.callServerEndpoint<_i21.SocietyPoll>(
+    'poll',
+    'createPoll',
+    {
+      'poll': poll,
+      'options': options,
+    },
+  );
+
+  /// Resident casts vote (enforces 1 Flat = 1 Vote rule!)
+  _i2.Future<bool> castVote(
+    int pollId,
+    String flatNumber,
+    String voterName,
+    int optionId,
+  ) => caller.callServerEndpoint<bool>(
+    'poll',
+    'castVote',
+    {
+      'pollId': pollId,
+      'flatNumber': flatNumber,
+      'voterName': voterName,
+      'optionId': optionId,
+    },
+  );
+}
+
+/// {@category Endpoint}
+class EndpointSaasAdmin extends _i1.EndpointRef {
+  EndpointSaasAdmin(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'saasAdmin';
+
+  /// Fetch high-level SaaS platform metrics
+  _i2.Future<_i24.SaasMetricSummary> getMetricSummary() =>
+      caller.callServerEndpoint<_i24.SaasMetricSummary>(
+        'saasAdmin',
+        'getMetricSummary',
+        {},
+      );
+
+  /// List all client society subscriptions
+  _i2.Future<List<_i25.SocietySubscription>> getAllSubscriptions() =>
+      caller.callServerEndpoint<List<_i25.SocietySubscription>>(
+        'saasAdmin',
+        'getAllSubscriptions',
+        {},
+      );
+
+  /// Register new society subscription
+  _i2.Future<_i25.SocietySubscription> createSubscription(
+    _i25.SocietySubscription sub,
+  ) => caller.callServerEndpoint<_i25.SocietySubscription>(
+    'saasAdmin',
+    'createSubscription',
+    {'sub': sub},
+  );
+
+  /// Update subscription status (active, past_due, suspended)
+  _i2.Future<_i25.SocietySubscription?> updateSubscriptionStatus(
+    int subscriptionId,
+    String status,
+  ) => caller.callServerEndpoint<_i25.SocietySubscription?>(
+    'saasAdmin',
+    'updateSubscriptionStatus',
+    {
+      'subscriptionId': subscriptionId,
+      'status': status,
+    },
+  );
 }
 
 /// {@category Endpoint}
@@ -552,12 +771,12 @@ class EndpointVisitor extends _i1.EndpointRef {
   String get name => 'visitor';
 
   /// Get visitors for a society or complex
-  _i2.Future<List<_i18.VisitorEntry>> getVisitors(
+  _i2.Future<List<_i26.VisitorEntry>> getVisitors(
     int societyId, {
     int? complexId,
     String? flatNumber,
-    _i19.VisitorStatus? status,
-  }) => caller.callServerEndpoint<List<_i18.VisitorEntry>>(
+    _i27.VisitorStatus? status,
+  }) => caller.callServerEndpoint<List<_i26.VisitorEntry>>(
     'visitor',
     'getVisitors',
     {
@@ -569,18 +788,18 @@ class EndpointVisitor extends _i1.EndpointRef {
   );
 
   /// Create visitor entry (can be pre-approved by resident or added by guard)
-  _i2.Future<_i18.VisitorEntry> createVisitorEntry(_i18.VisitorEntry entry) =>
-      caller.callServerEndpoint<_i18.VisitorEntry>(
+  _i2.Future<_i26.VisitorEntry> createVisitorEntry(_i26.VisitorEntry entry) =>
+      caller.callServerEndpoint<_i26.VisitorEntry>(
         'visitor',
         'createVisitorEntry',
         {'entry': entry},
       );
 
   /// Update visitor status (e.g., approved by resident, marked inside/exited by guard)
-  _i2.Future<_i18.VisitorEntry?> updateVisitorStatus(
+  _i2.Future<_i26.VisitorEntry?> updateVisitorStatus(
     int visitorId,
-    _i19.VisitorStatus status,
-  ) => caller.callServerEndpoint<_i18.VisitorEntry?>(
+    _i27.VisitorStatus status,
+  ) => caller.callServerEndpoint<_i26.VisitorEntry?>(
     'visitor',
     'updateVisitorStatus',
     {
@@ -590,10 +809,10 @@ class EndpointVisitor extends _i1.EndpointRef {
   );
 
   /// Verify visitor passcode at the gate
-  _i2.Future<_i18.VisitorEntry?> verifyVisitorPasscode(
+  _i2.Future<_i26.VisitorEntry?> verifyVisitorPasscode(
     int societyId,
     String passcode,
-  ) => caller.callServerEndpoint<_i18.VisitorEntry?>(
+  ) => caller.callServerEndpoint<_i26.VisitorEntry?>(
     'visitor',
     'verifyVisitorPasscode',
     {
@@ -634,7 +853,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i20.Protocol(),
+         _i28.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -648,8 +867,12 @@ class Client extends _i1.ServerpodClientShared {
     jwtRefresh = EndpointJwtRefresh(this);
     communication = EndpointCommunication(this);
     society = EndpointSociety(this);
+    document = EndpointDocument(this);
+    sos = EndpointSos(this);
     greeting = EndpointGreeting(this);
     maintenance = EndpointMaintenance(this);
+    poll = EndpointPoll(this);
+    saasAdmin = EndpointSaasAdmin(this);
     visitor = EndpointVisitor(this);
     modules = Modules(this);
   }
@@ -664,9 +887,17 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointSociety society;
 
+  late final EndpointDocument document;
+
+  late final EndpointSos sos;
+
   late final EndpointGreeting greeting;
 
   late final EndpointMaintenance maintenance;
+
+  late final EndpointPoll poll;
+
+  late final EndpointSaasAdmin saasAdmin;
 
   late final EndpointVisitor visitor;
 
@@ -679,8 +910,12 @@ class Client extends _i1.ServerpodClientShared {
     'jwtRefresh': jwtRefresh,
     'communication': communication,
     'society': society,
+    'document': document,
+    'sos': sos,
     'greeting': greeting,
     'maintenance': maintenance,
+    'poll': poll,
+    'saasAdmin': saasAdmin,
     'visitor': visitor,
   };
 

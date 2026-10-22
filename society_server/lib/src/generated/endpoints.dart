@@ -16,35 +16,51 @@ import '../auth/email_idp_endpoint.dart' as _i3;
 import '../auth/jwt_refresh_endpoint.dart' as _i4;
 import '../communication/communication_endpoint.dart' as _i5;
 import '../core/society_endpoint.dart' as _i6;
-import '../greetings/greeting_endpoint.dart' as _i7;
-import '../maintenance/maintenance_endpoint.dart' as _i8;
-import '../visitor/visitor_endpoint.dart' as _i9;
+import '../documents/document_endpoint.dart' as _i7;
+import '../emergency/sos_endpoint.dart' as _i8;
+import '../greetings/greeting_endpoint.dart' as _i9;
+import '../maintenance/maintenance_endpoint.dart' as _i10;
+import '../polling/poll_endpoint.dart' as _i11;
+import '../saas_admin/saas_admin_endpoint.dart' as _i12;
+import '../visitor/visitor_endpoint.dart' as _i13;
 import 'package:society_server/src/generated/accounting/models/voucher_status.dart'
-    as _i10;
-import 'package:society_server/src/generated/accounting/models/voucher_request.dart'
-    as _i11;
-import 'package:society_server/src/generated/communication/models/notice.dart'
-    as _i12;
-import 'package:society_server/src/generated/communication/models/complaint.dart'
-    as _i13;
-import 'package:society_server/src/generated/communication/models/complaint_status.dart'
     as _i14;
-import 'package:society_server/src/generated/core/models/society.dart' as _i15;
-import 'package:society_server/src/generated/core/models/flat.dart' as _i16;
-import 'package:society_server/src/generated/core/models/society_user.dart'
+import 'package:society_server/src/generated/accounting/models/voucher_request.dart'
+    as _i15;
+import 'package:society_server/src/generated/communication/models/notice.dart'
+    as _i16;
+import 'package:society_server/src/generated/communication/models/complaint.dart'
     as _i17;
-import 'package:society_server/src/generated/maintenance/models/maintenance_bill.dart'
+import 'package:society_server/src/generated/communication/models/complaint_status.dart'
     as _i18;
-import 'package:society_server/src/generated/maintenance/models/payment_record.dart'
-    as _i19;
-import 'package:society_server/src/generated/visitor/models/visitor_status.dart'
-    as _i20;
-import 'package:society_server/src/generated/visitor/models/visitor_entry.dart'
+import 'package:society_server/src/generated/core/models/society.dart' as _i19;
+import 'package:society_server/src/generated/core/models/flat.dart' as _i20;
+import 'package:society_server/src/generated/core/models/society_user.dart'
     as _i21;
-import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
+import 'package:society_server/src/generated/documents/models/society_document.dart'
     as _i22;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+import 'package:society_server/src/generated/documents/models/meeting_minutes.dart'
     as _i23;
+import 'package:society_server/src/generated/emergency/models/sos_alert.dart'
+    as _i24;
+import 'package:society_server/src/generated/maintenance/models/maintenance_bill.dart'
+    as _i25;
+import 'package:society_server/src/generated/maintenance/models/payment_record.dart'
+    as _i26;
+import 'package:society_server/src/generated/polling/models/poll_status.dart'
+    as _i27;
+import 'package:society_server/src/generated/polling/models/society_poll.dart'
+    as _i28;
+import 'package:society_server/src/generated/saas_admin/models/society_subscription.dart'
+    as _i29;
+import 'package:society_server/src/generated/visitor/models/visitor_status.dart'
+    as _i30;
+import 'package:society_server/src/generated/visitor/models/visitor_entry.dart'
+    as _i31;
+import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
+    as _i32;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i33;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -80,19 +96,43 @@ class Endpoints extends _i1.EndpointDispatch {
           'society',
           null,
         ),
-      'greeting': _i7.GreetingEndpoint()
+      'document': _i7.DocumentEndpoint()
+        ..initialize(
+          server,
+          'document',
+          null,
+        ),
+      'sos': _i8.SosEndpoint()
+        ..initialize(
+          server,
+          'sos',
+          null,
+        ),
+      'greeting': _i9.GreetingEndpoint()
         ..initialize(
           server,
           'greeting',
           null,
         ),
-      'maintenance': _i8.MaintenanceEndpoint()
+      'maintenance': _i10.MaintenanceEndpoint()
         ..initialize(
           server,
           'maintenance',
           null,
         ),
-      'visitor': _i9.VisitorEndpoint()
+      'poll': _i11.PollEndpoint()
+        ..initialize(
+          server,
+          'poll',
+          null,
+        ),
+      'saasAdmin': _i12.SaasAdminEndpoint()
+        ..initialize(
+          server,
+          'saasAdmin',
+          null,
+        ),
+      'visitor': _i13.VisitorEndpoint()
         ..initialize(
           server,
           'visitor',
@@ -113,7 +153,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i10.VoucherStatus?>(),
+              type: _i1.getType<_i14.VoucherStatus?>(),
               nullable: true,
             ),
           },
@@ -133,7 +173,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'request': _i1.ParameterDescription(
               name: 'request',
-              type: _i1.getType<_i11.VoucherRequest>(),
+              type: _i1.getType<_i15.VoucherRequest>(),
               nullable: false,
             ),
           },
@@ -513,7 +553,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'notice': _i1.ParameterDescription(
               name: 'notice',
-              type: _i1.getType<_i12.Notice>(),
+              type: _i1.getType<_i16.Notice>(),
               nullable: false,
             ),
           },
@@ -559,7 +599,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'complaint': _i1.ParameterDescription(
               name: 'complaint',
-              type: _i1.getType<_i13.Complaint>(),
+              type: _i1.getType<_i17.Complaint>(),
               nullable: false,
             ),
           },
@@ -584,7 +624,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i14.ComplaintStatus>(),
+              type: _i1.getType<_i18.ComplaintStatus>(),
               nullable: false,
             ),
             'resolutionNotes': _i1.ParameterDescription(
@@ -617,7 +657,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'society': _i1.ParameterDescription(
               name: 'society',
-              type: _i1.getType<_i15.Society>(),
+              type: _i1.getType<_i19.Society>(),
               nullable: false,
             ),
           },
@@ -683,7 +723,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'flat': _i1.ParameterDescription(
               name: 'flat',
-              type: _i1.getType<_i16.Flat>(),
+              type: _i1.getType<_i20.Flat>(),
               nullable: false,
             ),
           },
@@ -721,7 +761,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'user': _i1.ParameterDescription(
               name: 'user',
-              type: _i1.getType<_i17.SocietyUser>(),
+              type: _i1.getType<_i21.SocietyUser>(),
               nullable: false,
             ),
           },
@@ -734,6 +774,191 @@ class Endpoints extends _i1.EndpointDispatch {
                     session,
                     params['user'],
                   ),
+        ),
+      },
+    );
+    connectors['document'] = _i1.EndpointConnector(
+      name: 'document',
+      endpoint: endpoints['document']!,
+      methodConnectors: {
+        'getDocuments': _i1.MethodConnector(
+          name: 'getDocuments',
+          params: {
+            'societyId': _i1.ParameterDescription(
+              name: 'societyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'includeCommitteeOnly': _i1.ParameterDescription(
+              name: 'includeCommitteeOnly',
+              type: _i1.getType<bool>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['document'] as _i7.DocumentEndpoint).getDocuments(
+                    session,
+                    params['societyId'],
+                    includeCommitteeOnly: params['includeCommitteeOnly'],
+                  ),
+        ),
+        'uploadDocument': _i1.MethodConnector(
+          name: 'uploadDocument',
+          params: {
+            'doc': _i1.ParameterDescription(
+              name: 'doc',
+              type: _i1.getType<_i22.SocietyDocument>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['document'] as _i7.DocumentEndpoint)
+                  .uploadDocument(
+                    session,
+                    params['doc'],
+                  ),
+        ),
+        'getMeetingMinutes': _i1.MethodConnector(
+          name: 'getMeetingMinutes',
+          params: {
+            'societyId': _i1.ParameterDescription(
+              name: 'societyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['document'] as _i7.DocumentEndpoint)
+                  .getMeetingMinutes(
+                    session,
+                    params['societyId'],
+                  ),
+        ),
+        'recordMeetingMinutes': _i1.MethodConnector(
+          name: 'recordMeetingMinutes',
+          params: {
+            'minutes': _i1.ParameterDescription(
+              name: 'minutes',
+              type: _i1.getType<_i23.MeetingMinutes>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['document'] as _i7.DocumentEndpoint)
+                  .recordMeetingMinutes(
+                    session,
+                    params['minutes'],
+                  ),
+        ),
+      },
+    );
+    connectors['sos'] = _i1.EndpointConnector(
+      name: 'sos',
+      endpoint: endpoints['sos']!,
+      methodConnectors: {
+        'raiseSosAlert': _i1.MethodConnector(
+          name: 'raiseSosAlert',
+          params: {
+            'alert': _i1.ParameterDescription(
+              name: 'alert',
+              type: _i1.getType<_i24.SosAlert>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['sos'] as _i8.SosEndpoint).raiseSosAlert(
+                session,
+                params['alert'],
+              ),
+        ),
+        'getActiveSosAlerts': _i1.MethodConnector(
+          name: 'getActiveSosAlerts',
+          params: {
+            'societyId': _i1.ParameterDescription(
+              name: 'societyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['sos'] as _i8.SosEndpoint).getActiveSosAlerts(
+                    session,
+                    params['societyId'],
+                  ),
+        ),
+        'acknowledgeSos': _i1.MethodConnector(
+          name: 'acknowledgeSos',
+          params: {
+            'alertId': _i1.ParameterDescription(
+              name: 'alertId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'acknowledgedByName': _i1.ParameterDescription(
+              name: 'acknowledgedByName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['sos'] as _i8.SosEndpoint).acknowledgeSos(
+                session,
+                params['alertId'],
+                params['acknowledgedByName'],
+              ),
+        ),
+        'resolveSos': _i1.MethodConnector(
+          name: 'resolveSos',
+          params: {
+            'alertId': _i1.ParameterDescription(
+              name: 'alertId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'resolvedByName': _i1.ParameterDescription(
+              name: 'resolvedByName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'resolutionNotes': _i1.ParameterDescription(
+              name: 'resolutionNotes',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['sos'] as _i8.SosEndpoint).resolveSos(
+                session,
+                params['alertId'],
+                params['resolvedByName'],
+                params['resolutionNotes'],
+              ),
         ),
       },
     );
@@ -754,7 +979,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['greeting'] as _i7.GreetingEndpoint).hello(
+              ) async => (endpoints['greeting'] as _i9.GreetingEndpoint).hello(
                 session,
                 params['name'],
               ),
@@ -783,7 +1008,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['maintenance'] as _i8.MaintenanceEndpoint)
+              ) async => (endpoints['maintenance'] as _i10.MaintenanceEndpoint)
                   .getBills(
                     session,
                     params['societyId'],
@@ -795,7 +1020,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'bill': _i1.ParameterDescription(
               name: 'bill',
-              type: _i1.getType<_i18.MaintenanceBill>(),
+              type: _i1.getType<_i25.MaintenanceBill>(),
               nullable: false,
             ),
           },
@@ -803,7 +1028,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['maintenance'] as _i8.MaintenanceEndpoint)
+              ) async => (endpoints['maintenance'] as _i10.MaintenanceEndpoint)
                   .createBill(
                     session,
                     params['bill'],
@@ -814,7 +1039,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'payment': _i1.ParameterDescription(
               name: 'payment',
-              type: _i1.getType<_i19.PaymentRecord>(),
+              type: _i1.getType<_i26.PaymentRecord>(),
               nullable: false,
             ),
           },
@@ -822,7 +1047,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['maintenance'] as _i8.MaintenanceEndpoint)
+              ) async => (endpoints['maintenance'] as _i10.MaintenanceEndpoint)
                   .recordPayment(
                     session,
                     params['payment'],
@@ -841,10 +1066,189 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['maintenance'] as _i8.MaintenanceEndpoint)
+              ) async => (endpoints['maintenance'] as _i10.MaintenanceEndpoint)
                   .getPayments(
                     session,
                     params['societyId'],
+                  ),
+        ),
+      },
+    );
+    connectors['poll'] = _i1.EndpointConnector(
+      name: 'poll',
+      endpoint: endpoints['poll']!,
+      methodConnectors: {
+        'getPolls': _i1.MethodConnector(
+          name: 'getPolls',
+          params: {
+            'societyId': _i1.ParameterDescription(
+              name: 'societyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'status': _i1.ParameterDescription(
+              name: 'status',
+              type: _i1.getType<_i27.PollStatus?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['poll'] as _i11.PollEndpoint).getPolls(
+                session,
+                params['societyId'],
+                status: params['status'],
+              ),
+        ),
+        'getPollOptions': _i1.MethodConnector(
+          name: 'getPollOptions',
+          params: {
+            'pollId': _i1.ParameterDescription(
+              name: 'pollId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['poll'] as _i11.PollEndpoint).getPollOptions(
+                    session,
+                    params['pollId'],
+                  ),
+        ),
+        'createPoll': _i1.MethodConnector(
+          name: 'createPoll',
+          params: {
+            'poll': _i1.ParameterDescription(
+              name: 'poll',
+              type: _i1.getType<_i28.SocietyPoll>(),
+              nullable: false,
+            ),
+            'options': _i1.ParameterDescription(
+              name: 'options',
+              type: _i1.getType<List<String>>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['poll'] as _i11.PollEndpoint).createPoll(
+                session,
+                params['poll'],
+                params['options'],
+              ),
+        ),
+        'castVote': _i1.MethodConnector(
+          name: 'castVote',
+          params: {
+            'pollId': _i1.ParameterDescription(
+              name: 'pollId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'flatNumber': _i1.ParameterDescription(
+              name: 'flatNumber',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'voterName': _i1.ParameterDescription(
+              name: 'voterName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'optionId': _i1.ParameterDescription(
+              name: 'optionId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['poll'] as _i11.PollEndpoint).castVote(
+                session,
+                params['pollId'],
+                params['flatNumber'],
+                params['voterName'],
+                params['optionId'],
+              ),
+        ),
+      },
+    );
+    connectors['saasAdmin'] = _i1.EndpointConnector(
+      name: 'saasAdmin',
+      endpoint: endpoints['saasAdmin']!,
+      methodConnectors: {
+        'getMetricSummary': _i1.MethodConnector(
+          name: 'getMetricSummary',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['saasAdmin'] as _i12.SaasAdminEndpoint)
+                  .getMetricSummary(session),
+        ),
+        'getAllSubscriptions': _i1.MethodConnector(
+          name: 'getAllSubscriptions',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['saasAdmin'] as _i12.SaasAdminEndpoint)
+                  .getAllSubscriptions(session),
+        ),
+        'createSubscription': _i1.MethodConnector(
+          name: 'createSubscription',
+          params: {
+            'sub': _i1.ParameterDescription(
+              name: 'sub',
+              type: _i1.getType<_i29.SocietySubscription>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['saasAdmin'] as _i12.SaasAdminEndpoint)
+                  .createSubscription(
+                    session,
+                    params['sub'],
+                  ),
+        ),
+        'updateSubscriptionStatus': _i1.MethodConnector(
+          name: 'updateSubscriptionStatus',
+          params: {
+            'subscriptionId': _i1.ParameterDescription(
+              name: 'subscriptionId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'status': _i1.ParameterDescription(
+              name: 'status',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['saasAdmin'] as _i12.SaasAdminEndpoint)
+                  .updateSubscriptionStatus(
+                    session,
+                    params['subscriptionId'],
+                    params['status'],
                   ),
         ),
       },
@@ -873,7 +1277,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i20.VisitorStatus?>(),
+              type: _i1.getType<_i30.VisitorStatus?>(),
               nullable: true,
             ),
           },
@@ -882,7 +1286,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 _i1.Session session,
                 Map<String, dynamic> params,
               ) async =>
-                  (endpoints['visitor'] as _i9.VisitorEndpoint).getVisitors(
+                  (endpoints['visitor'] as _i13.VisitorEndpoint).getVisitors(
                     session,
                     params['societyId'],
                     complexId: params['complexId'],
@@ -895,7 +1299,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'entry': _i1.ParameterDescription(
               name: 'entry',
-              type: _i1.getType<_i21.VisitorEntry>(),
+              type: _i1.getType<_i31.VisitorEntry>(),
               nullable: false,
             ),
           },
@@ -903,7 +1307,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['visitor'] as _i9.VisitorEndpoint)
+              ) async => (endpoints['visitor'] as _i13.VisitorEndpoint)
                   .createVisitorEntry(
                     session,
                     params['entry'],
@@ -919,7 +1323,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i20.VisitorStatus>(),
+              type: _i1.getType<_i30.VisitorStatus>(),
               nullable: false,
             ),
           },
@@ -927,7 +1331,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['visitor'] as _i9.VisitorEndpoint)
+              ) async => (endpoints['visitor'] as _i13.VisitorEndpoint)
                   .updateVisitorStatus(
                     session,
                     params['visitorId'],
@@ -952,7 +1356,7 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['visitor'] as _i9.VisitorEndpoint)
+              ) async => (endpoints['visitor'] as _i13.VisitorEndpoint)
                   .verifyVisitorPasscode(
                     session,
                     params['societyId'],
@@ -961,9 +1365,9 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i22.Endpoints()
+    modules['serverpod_auth_idp'] = _i32.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i23.Endpoints()
+    modules['serverpod_auth_core'] = _i33.Endpoints()
       ..initializeEndpoints(server);
   }
 }

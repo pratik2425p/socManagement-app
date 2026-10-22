@@ -6,6 +6,8 @@ import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'theme/app_theme.dart';
 import 'services/society_state.dart';
 import 'screens/home_screen.dart';
+import 'screens/documents/document_vault_screen.dart';
+import 'screens/polling/polling_screen.dart';
 
 late final Client client;
 late final SocietyState globalSocietyState;
@@ -36,6 +38,10 @@ class SocietyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: HomeScreen(state: globalSocietyState),
+      routes: {
+        '/documents': (ctx) => DocumentVaultScreen(state: globalSocietyState),
+        '/polling': (ctx) => PollingScreen(state: globalSocietyState),
+      },
     );
   }
 }
