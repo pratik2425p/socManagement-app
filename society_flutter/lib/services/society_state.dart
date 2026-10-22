@@ -7,14 +7,18 @@ class SocietyState extends ChangeNotifier {
   UserRole _currentRole = UserRole.resident;
   String _societyName = 'Shree Samarth Co-op Housing Society';
   String _currentFlat = 'A-304';
-  final String _currentUserName = 'Vicky Patil';
+  String _currentUserName = 'Vicky Patil';
   bool _isLoading = false;
+  SocietyUser? _activeUser;
+  List<SocietyUser> _users = [];
 
   UserRole get currentRole => _currentRole;
   String get societyName => _societyName;
   String get currentFlat => _currentFlat;
   String get currentUserName => _currentUserName;
   bool get isLoading => _isLoading;
+  SocietyUser? get activeUser => _activeUser;
+  List<SocietyUser> get users => _users;
 
   SocietyState({required this.client}) {
     fetchInitialData();
@@ -89,6 +93,7 @@ class SocietyState extends ChangeNotifier {
       }
 
       await Future.wait([
+        _loadUsers(),
         _loadBills(),
         _loadVisitors(),
         _loadVouchers(),
@@ -106,6 +111,70 @@ class SocietyState extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  void setActiveUser(SocietyUser user) {
+    _activeUser = user;
+    _currentUserName = user.fullName;
+    _currentRole = user.role;
+    if (user.flatNumber != null && user.flatNumber!.isNotEmpty) {
+      _currentFlat = user.flatNumber!;
+    }
+    notifyListeners();
+  }
+
+  Future<SocietyUser?> createNewUser({
+    required String fullName,
+    required String phone,
+    required String email,
+    required UserRole role,
+    String? flatNumber,
+    bool makeActive = true,
+  }) async {
+    final newUser = SocietyUser(
+      societyId: 1,
+      fullName: fullName,
+      phone: phone,
+      email: email,
+      role: role,
+      flatNumber: flatNumber,
+      status: 'active',
+      createdAt: DateTime.now(),
+    );
+
+    try {
+      final created = await client.society.createSocietyUser(newUser);
+      await _loadUsers();
+      if (makeActive) {
+        setActiveUser(created);
+      }
+      notifyListeners();
+      return created;
+    } catch (e) {
+      debugPrint('Error creating new user: $e');
+      return null;
+    }
+  }
+
+  Future<void> refreshUsers() async {
+    await _loadUsers();
+    notifyListeners();
+  }
+
+  Future<void> _loadUsers() async {
+    try {
+      _users = await client.society.getSocietyUsers(1);
+      if (_activeUser == null && _users.isNotEmpty) {
+        _activeUser = _users.first;
+        _currentUserName = _activeUser!.fullName;
+        _currentRole = _activeUser!.role;
+        if (_activeUser!.flatNumber != null) {
+          _currentFlat = _activeUser!.flatNumber!;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading users: $e');
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../services/society_state.dart';
 import '../../theme/app_theme.dart';
+import '../profile/user_management_sheet.dart';
 
 class ResidentDashboard extends StatelessWidget {
   final SocietyState state;
@@ -60,15 +61,26 @@ class ResidentDashboard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentTeal,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Flat Owner',
-                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                InkWell(
+                  onTap: () => showUserManagementSheet(context, state),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentTeal,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.manage_accounts, color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text(
+                          'Profiles',
+                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

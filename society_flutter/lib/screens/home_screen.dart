@@ -9,6 +9,7 @@ import 'dashboard/accountant_dashboard.dart';
 import 'dashboard/saas_admin_dashboard.dart';
 import 'documents/document_vault_screen.dart';
 import 'polling/polling_screen.dart';
+import 'profile/user_management_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final SocietyState state;
@@ -93,6 +94,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
+          ),
+          // Active User Profile & Fresh User Switcher Pill
+          InkWell(
+            onTap: () => showUserManagementSheet(context, state),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 11,
+                    backgroundColor: AppTheme.accentTeal,
+                    child: Text(
+                      state.currentUserName.isNotEmpty ? state.currentUserName[0].toUpperCase() : 'U',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 55),
+                    child: Text(
+                      state.currentUserName.split(' ').first,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, color: Colors.white, size: 16),
+                ],
+              ),
+            ),
           ),
           // Role Switcher Dropdown in App Bar
           Container(
