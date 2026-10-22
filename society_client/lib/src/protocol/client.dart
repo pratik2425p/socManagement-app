@@ -31,35 +31,38 @@ import 'package:society_client/src/protocol/communication/models/complaint.dart'
 import 'package:society_client/src/protocol/communication/models/complaint_status.dart'
     as _i11;
 import 'package:society_client/src/protocol/core/models/society.dart' as _i12;
-import 'package:society_client/src/protocol/core/models/flat.dart' as _i13;
+import 'package:society_client/src/protocol/core/models/building.dart' as _i13;
+import 'package:society_client/src/protocol/core/models/flat.dart' as _i14;
 import 'package:society_client/src/protocol/core/models/society_user.dart'
-    as _i14;
-import 'package:society_client/src/protocol/documents/models/society_document.dart'
     as _i15;
-import 'package:society_client/src/protocol/documents/models/meeting_minutes.dart'
+import 'package:society_client/src/protocol/core/models/society_invitation.dart'
     as _i16;
-import 'package:society_client/src/protocol/emergency/models/sos_alert.dart'
+import 'package:society_client/src/protocol/documents/models/society_document.dart'
     as _i17;
-import 'package:society_client/src/protocol/greetings/greeting.dart' as _i18;
-import 'package:society_client/src/protocol/maintenance/models/maintenance_bill.dart'
+import 'package:society_client/src/protocol/documents/models/meeting_minutes.dart'
+    as _i18;
+import 'package:society_client/src/protocol/emergency/models/sos_alert.dart'
     as _i19;
-import 'package:society_client/src/protocol/maintenance/models/payment_record.dart'
-    as _i20;
-import 'package:society_client/src/protocol/polling/models/society_poll.dart'
+import 'package:society_client/src/protocol/greetings/greeting.dart' as _i20;
+import 'package:society_client/src/protocol/maintenance/models/maintenance_bill.dart'
     as _i21;
-import 'package:society_client/src/protocol/polling/models/poll_status.dart'
+import 'package:society_client/src/protocol/maintenance/models/payment_record.dart'
     as _i22;
-import 'package:society_client/src/protocol/polling/models/poll_option.dart'
+import 'package:society_client/src/protocol/polling/models/society_poll.dart'
     as _i23;
-import 'package:society_client/src/protocol/saas_admin/models/saas_metric_summary.dart'
+import 'package:society_client/src/protocol/polling/models/poll_status.dart'
     as _i24;
-import 'package:society_client/src/protocol/saas_admin/models/society_subscription.dart'
+import 'package:society_client/src/protocol/polling/models/poll_option.dart'
     as _i25;
-import 'package:society_client/src/protocol/visitor/models/visitor_entry.dart'
+import 'package:society_client/src/protocol/saas_admin/models/saas_metric_summary.dart'
     as _i26;
-import 'package:society_client/src/protocol/visitor/models/visitor_status.dart'
+import 'package:society_client/src/protocol/saas_admin/models/society_subscription.dart'
     as _i27;
-import 'protocol.dart' as _i28;
+import 'package:society_client/src/protocol/visitor/models/visitor_entry.dart'
+    as _i28;
+import 'package:society_client/src/protocol/visitor/models/visitor_status.dart'
+    as _i29;
+import 'protocol.dart' as _i30;
 
 /// {@category Endpoint}
 class EndpointAccounting extends _i1.EndpointRef {
@@ -464,37 +467,119 @@ class EndpointSociety extends _i1.EndpointRef {
         {'id': id},
       );
 
+  /// Onboard a new customer society with subscription and primary Society Admin
+  _i2.Future<_i12.Society> onboardNewSocietyWithAdmin(
+    _i12.Society society,
+    String adminName,
+    String adminPhone,
+    String adminEmail,
+    String planName,
+  ) => caller.callServerEndpoint<_i12.Society>(
+    'society',
+    'onboardNewSocietyWithAdmin',
+    {
+      'society': society,
+      'adminName': adminName,
+      'adminPhone': adminPhone,
+      'adminEmail': adminEmail,
+      'planName': planName,
+    },
+  );
+
+  /// Get buildings for a society
+  _i2.Future<List<_i13.Building>> getBuildings(int societyId) =>
+      caller.callServerEndpoint<List<_i13.Building>>(
+        'society',
+        'getBuildings',
+        {'societyId': societyId},
+      );
+
+  /// Create a building
+  _i2.Future<_i13.Building> createBuilding(_i13.Building building) =>
+      caller.callServerEndpoint<_i13.Building>(
+        'society',
+        'createBuilding',
+        {'building': building},
+      );
+
   /// Get flats for a given society
-  _i2.Future<List<_i13.Flat>> getFlats(int societyId) =>
-      caller.callServerEndpoint<List<_i13.Flat>>(
+  _i2.Future<List<_i14.Flat>> getFlats(int societyId) =>
+      caller.callServerEndpoint<List<_i14.Flat>>(
         'society',
         'getFlats',
         {'societyId': societyId},
       );
 
   /// Add a flat to a society
-  _i2.Future<_i13.Flat> createFlat(_i13.Flat flat) =>
-      caller.callServerEndpoint<_i13.Flat>(
+  _i2.Future<_i14.Flat> createFlat(_i14.Flat flat) =>
+      caller.callServerEndpoint<_i14.Flat>(
         'society',
         'createFlat',
         {'flat': flat},
       );
 
+  /// Bulk add flats to a society
+  _i2.Future<List<_i14.Flat>> bulkCreateFlats(List<_i14.Flat> flats) =>
+      caller.callServerEndpoint<List<_i14.Flat>>(
+        'society',
+        'bulkCreateFlats',
+        {'flats': flats},
+      );
+
   /// Get society users/members
-  _i2.Future<List<_i14.SocietyUser>> getSocietyUsers(int societyId) =>
-      caller.callServerEndpoint<List<_i14.SocietyUser>>(
+  _i2.Future<List<_i15.SocietyUser>> getSocietyUsers(int societyId) =>
+      caller.callServerEndpoint<List<_i15.SocietyUser>>(
         'society',
         'getSocietyUsers',
         {'societyId': societyId},
       );
 
   /// Register/Add a society user
-  _i2.Future<_i14.SocietyUser> createSocietyUser(_i14.SocietyUser user) =>
-      caller.callServerEndpoint<_i14.SocietyUser>(
+  _i2.Future<_i15.SocietyUser> createSocietyUser(_i15.SocietyUser user) =>
+      caller.callServerEndpoint<_i15.SocietyUser>(
         'society',
         'createSocietyUser',
         {'user': user},
       );
+
+  /// Create a member invitation
+  _i2.Future<_i16.SocietyInvitation> createInvitation(
+    _i16.SocietyInvitation invitation,
+  ) => caller.callServerEndpoint<_i16.SocietyInvitation>(
+    'society',
+    'createInvitation',
+    {'invitation': invitation},
+  );
+
+  /// Bulk create invitations (e.g. from Excel/CSV import)
+  _i2.Future<List<_i16.SocietyInvitation>> bulkCreateInvitations(
+    List<_i16.SocietyInvitation> invitations,
+  ) => caller.callServerEndpoint<List<_i16.SocietyInvitation>>(
+    'society',
+    'bulkCreateInvitations',
+    {'invitations': invitations},
+  );
+
+  /// List invitations for a society
+  _i2.Future<List<_i16.SocietyInvitation>> getInvitations(int societyId) =>
+      caller.callServerEndpoint<List<_i16.SocietyInvitation>>(
+        'society',
+        'getInvitations',
+        {'societyId': societyId},
+      );
+
+  /// Verify and accept an invitation by invite code
+  _i2.Future<_i15.SocietyUser?> verifyAndAcceptInvitation(
+    String inviteCode,
+    String phone,
+  ) => caller.callServerEndpoint<_i15.SocietyUser?>(
+    'society',
+    'verifyAndAcceptInvitation',
+    {
+      'inviteCode': inviteCode,
+      'phone': phone,
+    },
+  );
 }
 
 /// {@category Endpoint}
@@ -505,10 +590,10 @@ class EndpointDocument extends _i1.EndpointRef {
   String get name => 'document';
 
   /// Fetch all society documents
-  _i2.Future<List<_i15.SocietyDocument>> getDocuments(
+  _i2.Future<List<_i17.SocietyDocument>> getDocuments(
     int societyId, {
     required bool includeCommitteeOnly,
-  }) => caller.callServerEndpoint<List<_i15.SocietyDocument>>(
+  }) => caller.callServerEndpoint<List<_i17.SocietyDocument>>(
     'document',
     'getDocuments',
     {
@@ -518,25 +603,25 @@ class EndpointDocument extends _i1.EndpointRef {
   );
 
   /// Upload a document (bye-laws, audit reports, insurance, etc.)
-  _i2.Future<_i15.SocietyDocument> uploadDocument(_i15.SocietyDocument doc) =>
-      caller.callServerEndpoint<_i15.SocietyDocument>(
+  _i2.Future<_i17.SocietyDocument> uploadDocument(_i17.SocietyDocument doc) =>
+      caller.callServerEndpoint<_i17.SocietyDocument>(
         'document',
         'uploadDocument',
         {'doc': doc},
       );
 
   /// Fetch meeting minutes (AGM / EGM / Managing Committee)
-  _i2.Future<List<_i16.MeetingMinutes>> getMeetingMinutes(int societyId) =>
-      caller.callServerEndpoint<List<_i16.MeetingMinutes>>(
+  _i2.Future<List<_i18.MeetingMinutes>> getMeetingMinutes(int societyId) =>
+      caller.callServerEndpoint<List<_i18.MeetingMinutes>>(
         'document',
         'getMeetingMinutes',
         {'societyId': societyId},
       );
 
   /// Record new meeting minutes
-  _i2.Future<_i16.MeetingMinutes> recordMeetingMinutes(
-    _i16.MeetingMinutes minutes,
-  ) => caller.callServerEndpoint<_i16.MeetingMinutes>(
+  _i2.Future<_i18.MeetingMinutes> recordMeetingMinutes(
+    _i18.MeetingMinutes minutes,
+  ) => caller.callServerEndpoint<_i18.MeetingMinutes>(
     'document',
     'recordMeetingMinutes',
     {'minutes': minutes},
@@ -551,26 +636,26 @@ class EndpointSos extends _i1.EndpointRef {
   String get name => 'sos';
 
   /// Trigger an immediate Emergency SOS Alert
-  _i2.Future<_i17.SosAlert> raiseSosAlert(_i17.SosAlert alert) =>
-      caller.callServerEndpoint<_i17.SosAlert>(
+  _i2.Future<_i19.SosAlert> raiseSosAlert(_i19.SosAlert alert) =>
+      caller.callServerEndpoint<_i19.SosAlert>(
         'sos',
         'raiseSosAlert',
         {'alert': alert},
       );
 
   /// Get active / un-resolved emergency alerts for guards & chairman
-  _i2.Future<List<_i17.SosAlert>> getActiveSosAlerts(int societyId) =>
-      caller.callServerEndpoint<List<_i17.SosAlert>>(
+  _i2.Future<List<_i19.SosAlert>> getActiveSosAlerts(int societyId) =>
+      caller.callServerEndpoint<List<_i19.SosAlert>>(
         'sos',
         'getActiveSosAlerts',
         {'societyId': societyId},
       );
 
   /// Guard acknowledges emergency and dispatches help
-  _i2.Future<_i17.SosAlert?> acknowledgeSos(
+  _i2.Future<_i19.SosAlert?> acknowledgeSos(
     int alertId,
     String acknowledgedByName,
-  ) => caller.callServerEndpoint<_i17.SosAlert?>(
+  ) => caller.callServerEndpoint<_i19.SosAlert?>(
     'sos',
     'acknowledgeSos',
     {
@@ -580,11 +665,11 @@ class EndpointSos extends _i1.EndpointRef {
   );
 
   /// Resolve emergency after situation is safe
-  _i2.Future<_i17.SosAlert?> resolveSos(
+  _i2.Future<_i19.SosAlert?> resolveSos(
     int alertId,
     String resolvedByName,
     String resolutionNotes,
-  ) => caller.callServerEndpoint<_i17.SosAlert?>(
+  ) => caller.callServerEndpoint<_i19.SosAlert?>(
     'sos',
     'resolveSos',
     {
@@ -605,8 +690,8 @@ class EndpointGreeting extends _i1.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i2.Future<_i18.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i18.Greeting>(
+  _i2.Future<_i20.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i20.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -621,10 +706,10 @@ class EndpointMaintenance extends _i1.EndpointRef {
   String get name => 'maintenance';
 
   /// Get all maintenance bills for a society, optionally filtered by flat
-  _i2.Future<List<_i19.MaintenanceBill>> getBills(
+  _i2.Future<List<_i21.MaintenanceBill>> getBills(
     int societyId, {
     String? flatNumber,
-  }) => caller.callServerEndpoint<List<_i19.MaintenanceBill>>(
+  }) => caller.callServerEndpoint<List<_i21.MaintenanceBill>>(
     'maintenance',
     'getBills',
     {
@@ -634,24 +719,24 @@ class EndpointMaintenance extends _i1.EndpointRef {
   );
 
   /// Generate/Create a maintenance bill
-  _i2.Future<_i19.MaintenanceBill> createBill(_i19.MaintenanceBill bill) =>
-      caller.callServerEndpoint<_i19.MaintenanceBill>(
+  _i2.Future<_i21.MaintenanceBill> createBill(_i21.MaintenanceBill bill) =>
+      caller.callServerEndpoint<_i21.MaintenanceBill>(
         'maintenance',
         'createBill',
         {'bill': bill},
       );
 
   /// Record a payment against maintenance
-  _i2.Future<_i20.PaymentRecord> recordPayment(_i20.PaymentRecord payment) =>
-      caller.callServerEndpoint<_i20.PaymentRecord>(
+  _i2.Future<_i22.PaymentRecord> recordPayment(_i22.PaymentRecord payment) =>
+      caller.callServerEndpoint<_i22.PaymentRecord>(
         'maintenance',
         'recordPayment',
         {'payment': payment},
       );
 
   /// Get payment history for a society
-  _i2.Future<List<_i20.PaymentRecord>> getPayments(int societyId) =>
-      caller.callServerEndpoint<List<_i20.PaymentRecord>>(
+  _i2.Future<List<_i22.PaymentRecord>> getPayments(int societyId) =>
+      caller.callServerEndpoint<List<_i22.PaymentRecord>>(
         'maintenance',
         'getPayments',
         {'societyId': societyId},
@@ -666,10 +751,10 @@ class EndpointPoll extends _i1.EndpointRef {
   String get name => 'poll';
 
   /// Fetch polls with optional active/closed filter
-  _i2.Future<List<_i21.SocietyPoll>> getPolls(
+  _i2.Future<List<_i23.SocietyPoll>> getPolls(
     int societyId, {
-    _i22.PollStatus? status,
-  }) => caller.callServerEndpoint<List<_i21.SocietyPoll>>(
+    _i24.PollStatus? status,
+  }) => caller.callServerEndpoint<List<_i23.SocietyPoll>>(
     'poll',
     'getPolls',
     {
@@ -679,18 +764,18 @@ class EndpointPoll extends _i1.EndpointRef {
   );
 
   /// Get options for a specific poll
-  _i2.Future<List<_i23.PollOption>> getPollOptions(int pollId) =>
-      caller.callServerEndpoint<List<_i23.PollOption>>(
+  _i2.Future<List<_i25.PollOption>> getPollOptions(int pollId) =>
+      caller.callServerEndpoint<List<_i25.PollOption>>(
         'poll',
         'getPollOptions',
         {'pollId': pollId},
       );
 
   /// Chairman / Committee creates a new poll with options
-  _i2.Future<_i21.SocietyPoll> createPoll(
-    _i21.SocietyPoll poll,
+  _i2.Future<_i23.SocietyPoll> createPoll(
+    _i23.SocietyPoll poll,
     List<String> options,
-  ) => caller.callServerEndpoint<_i21.SocietyPoll>(
+  ) => caller.callServerEndpoint<_i23.SocietyPoll>(
     'poll',
     'createPoll',
     {
@@ -725,35 +810,35 @@ class EndpointSaasAdmin extends _i1.EndpointRef {
   String get name => 'saasAdmin';
 
   /// Fetch high-level SaaS platform metrics
-  _i2.Future<_i24.SaasMetricSummary> getMetricSummary() =>
-      caller.callServerEndpoint<_i24.SaasMetricSummary>(
+  _i2.Future<_i26.SaasMetricSummary> getMetricSummary() =>
+      caller.callServerEndpoint<_i26.SaasMetricSummary>(
         'saasAdmin',
         'getMetricSummary',
         {},
       );
 
   /// List all client society subscriptions
-  _i2.Future<List<_i25.SocietySubscription>> getAllSubscriptions() =>
-      caller.callServerEndpoint<List<_i25.SocietySubscription>>(
+  _i2.Future<List<_i27.SocietySubscription>> getAllSubscriptions() =>
+      caller.callServerEndpoint<List<_i27.SocietySubscription>>(
         'saasAdmin',
         'getAllSubscriptions',
         {},
       );
 
   /// Register new society subscription
-  _i2.Future<_i25.SocietySubscription> createSubscription(
-    _i25.SocietySubscription sub,
-  ) => caller.callServerEndpoint<_i25.SocietySubscription>(
+  _i2.Future<_i27.SocietySubscription> createSubscription(
+    _i27.SocietySubscription sub,
+  ) => caller.callServerEndpoint<_i27.SocietySubscription>(
     'saasAdmin',
     'createSubscription',
     {'sub': sub},
   );
 
   /// Update subscription status (active, past_due, suspended)
-  _i2.Future<_i25.SocietySubscription?> updateSubscriptionStatus(
+  _i2.Future<_i27.SocietySubscription?> updateSubscriptionStatus(
     int subscriptionId,
     String status,
-  ) => caller.callServerEndpoint<_i25.SocietySubscription?>(
+  ) => caller.callServerEndpoint<_i27.SocietySubscription?>(
     'saasAdmin',
     'updateSubscriptionStatus',
     {
@@ -771,12 +856,12 @@ class EndpointVisitor extends _i1.EndpointRef {
   String get name => 'visitor';
 
   /// Get visitors for a society or complex
-  _i2.Future<List<_i26.VisitorEntry>> getVisitors(
+  _i2.Future<List<_i28.VisitorEntry>> getVisitors(
     int societyId, {
     int? complexId,
     String? flatNumber,
-    _i27.VisitorStatus? status,
-  }) => caller.callServerEndpoint<List<_i26.VisitorEntry>>(
+    _i29.VisitorStatus? status,
+  }) => caller.callServerEndpoint<List<_i28.VisitorEntry>>(
     'visitor',
     'getVisitors',
     {
@@ -788,18 +873,18 @@ class EndpointVisitor extends _i1.EndpointRef {
   );
 
   /// Create visitor entry (can be pre-approved by resident or added by guard)
-  _i2.Future<_i26.VisitorEntry> createVisitorEntry(_i26.VisitorEntry entry) =>
-      caller.callServerEndpoint<_i26.VisitorEntry>(
+  _i2.Future<_i28.VisitorEntry> createVisitorEntry(_i28.VisitorEntry entry) =>
+      caller.callServerEndpoint<_i28.VisitorEntry>(
         'visitor',
         'createVisitorEntry',
         {'entry': entry},
       );
 
   /// Update visitor status (e.g., approved by resident, marked inside/exited by guard)
-  _i2.Future<_i26.VisitorEntry?> updateVisitorStatus(
+  _i2.Future<_i28.VisitorEntry?> updateVisitorStatus(
     int visitorId,
-    _i27.VisitorStatus status,
-  ) => caller.callServerEndpoint<_i26.VisitorEntry?>(
+    _i29.VisitorStatus status,
+  ) => caller.callServerEndpoint<_i28.VisitorEntry?>(
     'visitor',
     'updateVisitorStatus',
     {
@@ -809,10 +894,10 @@ class EndpointVisitor extends _i1.EndpointRef {
   );
 
   /// Verify visitor passcode at the gate
-  _i2.Future<_i26.VisitorEntry?> verifyVisitorPasscode(
+  _i2.Future<_i28.VisitorEntry?> verifyVisitorPasscode(
     int societyId,
     String passcode,
-  ) => caller.callServerEndpoint<_i26.VisitorEntry?>(
+  ) => caller.callServerEndpoint<_i28.VisitorEntry?>(
     'visitor',
     'verifyVisitorPasscode',
     {
@@ -853,7 +938,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i28.Protocol(),
+         _i30.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

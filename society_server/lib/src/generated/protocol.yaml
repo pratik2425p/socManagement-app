@@ -27,10 +27,18 @@ society:
   - createSociety:
   - getSocieties:
   - getSocietyById:
+  - onboardNewSocietyWithAdmin:
+  - getBuildings:
+  - createBuilding:
   - getFlats:
   - createFlat:
+  - bulkCreateFlats:
   - getSocietyUsers:
   - createSocietyUser:
+  - createInvitation:
+  - bulkCreateInvitations:
+  - getInvitations:
+  - verifyAndAcceptInvitation:
 document:
   - getDocuments:
   - uploadDocument:

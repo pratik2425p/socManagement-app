@@ -34,33 +34,36 @@ import 'package:society_server/src/generated/communication/models/complaint.dart
 import 'package:society_server/src/generated/communication/models/complaint_status.dart'
     as _i18;
 import 'package:society_server/src/generated/core/models/society.dart' as _i19;
-import 'package:society_server/src/generated/core/models/flat.dart' as _i20;
+import 'package:society_server/src/generated/core/models/building.dart' as _i20;
+import 'package:society_server/src/generated/core/models/flat.dart' as _i21;
 import 'package:society_server/src/generated/core/models/society_user.dart'
-    as _i21;
-import 'package:society_server/src/generated/documents/models/society_document.dart'
     as _i22;
-import 'package:society_server/src/generated/documents/models/meeting_minutes.dart'
+import 'package:society_server/src/generated/core/models/society_invitation.dart'
     as _i23;
-import 'package:society_server/src/generated/emergency/models/sos_alert.dart'
+import 'package:society_server/src/generated/documents/models/society_document.dart'
     as _i24;
-import 'package:society_server/src/generated/maintenance/models/maintenance_bill.dart'
+import 'package:society_server/src/generated/documents/models/meeting_minutes.dart'
     as _i25;
-import 'package:society_server/src/generated/maintenance/models/payment_record.dart'
+import 'package:society_server/src/generated/emergency/models/sos_alert.dart'
     as _i26;
-import 'package:society_server/src/generated/polling/models/poll_status.dart'
+import 'package:society_server/src/generated/maintenance/models/maintenance_bill.dart'
     as _i27;
-import 'package:society_server/src/generated/polling/models/society_poll.dart'
+import 'package:society_server/src/generated/maintenance/models/payment_record.dart'
     as _i28;
-import 'package:society_server/src/generated/saas_admin/models/society_subscription.dart'
+import 'package:society_server/src/generated/polling/models/poll_status.dart'
     as _i29;
-import 'package:society_server/src/generated/visitor/models/visitor_status.dart'
+import 'package:society_server/src/generated/polling/models/society_poll.dart'
     as _i30;
-import 'package:society_server/src/generated/visitor/models/visitor_entry.dart'
+import 'package:society_server/src/generated/saas_admin/models/society_subscription.dart'
     as _i31;
-import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
+import 'package:society_server/src/generated/visitor/models/visitor_status.dart'
     as _i32;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+import 'package:society_server/src/generated/visitor/models/visitor_entry.dart'
     as _i33;
+import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
+    as _i34;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i35;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -700,6 +703,87 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['id'],
                   ),
         ),
+        'onboardNewSocietyWithAdmin': _i1.MethodConnector(
+          name: 'onboardNewSocietyWithAdmin',
+          params: {
+            'society': _i1.ParameterDescription(
+              name: 'society',
+              type: _i1.getType<_i19.Society>(),
+              nullable: false,
+            ),
+            'adminName': _i1.ParameterDescription(
+              name: 'adminName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'adminPhone': _i1.ParameterDescription(
+              name: 'adminPhone',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'adminEmail': _i1.ParameterDescription(
+              name: 'adminEmail',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'planName': _i1.ParameterDescription(
+              name: 'planName',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['society'] as _i6.SocietyEndpoint)
+                  .onboardNewSocietyWithAdmin(
+                    session,
+                    params['society'],
+                    params['adminName'],
+                    params['adminPhone'],
+                    params['adminEmail'],
+                    params['planName'],
+                  ),
+        ),
+        'getBuildings': _i1.MethodConnector(
+          name: 'getBuildings',
+          params: {
+            'societyId': _i1.ParameterDescription(
+              name: 'societyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['society'] as _i6.SocietyEndpoint).getBuildings(
+                    session,
+                    params['societyId'],
+                  ),
+        ),
+        'createBuilding': _i1.MethodConnector(
+          name: 'createBuilding',
+          params: {
+            'building': _i1.ParameterDescription(
+              name: 'building',
+              type: _i1.getType<_i20.Building>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['society'] as _i6.SocietyEndpoint).createBuilding(
+                    session,
+                    params['building'],
+                  ),
+        ),
         'getFlats': _i1.MethodConnector(
           name: 'getFlats',
           params: {
@@ -723,7 +807,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'flat': _i1.ParameterDescription(
               name: 'flat',
-              type: _i1.getType<_i20.Flat>(),
+              type: _i1.getType<_i21.Flat>(),
               nullable: false,
             ),
           },
@@ -735,6 +819,25 @@ class Endpoints extends _i1.EndpointDispatch {
                   (endpoints['society'] as _i6.SocietyEndpoint).createFlat(
                     session,
                     params['flat'],
+                  ),
+        ),
+        'bulkCreateFlats': _i1.MethodConnector(
+          name: 'bulkCreateFlats',
+          params: {
+            'flats': _i1.ParameterDescription(
+              name: 'flats',
+              type: _i1.getType<List<_i21.Flat>>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['society'] as _i6.SocietyEndpoint).bulkCreateFlats(
+                    session,
+                    params['flats'],
                   ),
         ),
         'getSocietyUsers': _i1.MethodConnector(
@@ -761,7 +864,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'user': _i1.ParameterDescription(
               name: 'user',
-              type: _i1.getType<_i21.SocietyUser>(),
+              type: _i1.getType<_i22.SocietyUser>(),
               nullable: false,
             ),
           },
@@ -773,6 +876,88 @@ class Endpoints extends _i1.EndpointDispatch {
                   .createSocietyUser(
                     session,
                     params['user'],
+                  ),
+        ),
+        'createInvitation': _i1.MethodConnector(
+          name: 'createInvitation',
+          params: {
+            'invitation': _i1.ParameterDescription(
+              name: 'invitation',
+              type: _i1.getType<_i23.SocietyInvitation>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['society'] as _i6.SocietyEndpoint)
+                  .createInvitation(
+                    session,
+                    params['invitation'],
+                  ),
+        ),
+        'bulkCreateInvitations': _i1.MethodConnector(
+          name: 'bulkCreateInvitations',
+          params: {
+            'invitations': _i1.ParameterDescription(
+              name: 'invitations',
+              type: _i1.getType<List<_i23.SocietyInvitation>>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['society'] as _i6.SocietyEndpoint)
+                  .bulkCreateInvitations(
+                    session,
+                    params['invitations'],
+                  ),
+        ),
+        'getInvitations': _i1.MethodConnector(
+          name: 'getInvitations',
+          params: {
+            'societyId': _i1.ParameterDescription(
+              name: 'societyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['society'] as _i6.SocietyEndpoint).getInvitations(
+                    session,
+                    params['societyId'],
+                  ),
+        ),
+        'verifyAndAcceptInvitation': _i1.MethodConnector(
+          name: 'verifyAndAcceptInvitation',
+          params: {
+            'inviteCode': _i1.ParameterDescription(
+              name: 'inviteCode',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'phone': _i1.ParameterDescription(
+              name: 'phone',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['society'] as _i6.SocietyEndpoint)
+                  .verifyAndAcceptInvitation(
+                    session,
+                    params['inviteCode'],
+                    params['phone'],
                   ),
         ),
       },
@@ -811,7 +996,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'doc': _i1.ParameterDescription(
               name: 'doc',
-              type: _i1.getType<_i22.SocietyDocument>(),
+              type: _i1.getType<_i24.SocietyDocument>(),
               nullable: false,
             ),
           },
@@ -849,7 +1034,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'minutes': _i1.ParameterDescription(
               name: 'minutes',
-              type: _i1.getType<_i23.MeetingMinutes>(),
+              type: _i1.getType<_i25.MeetingMinutes>(),
               nullable: false,
             ),
           },
@@ -874,7 +1059,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'alert': _i1.ParameterDescription(
               name: 'alert',
-              type: _i1.getType<_i24.SosAlert>(),
+              type: _i1.getType<_i26.SosAlert>(),
               nullable: false,
             ),
           },
@@ -1020,7 +1205,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'bill': _i1.ParameterDescription(
               name: 'bill',
-              type: _i1.getType<_i25.MaintenanceBill>(),
+              type: _i1.getType<_i27.MaintenanceBill>(),
               nullable: false,
             ),
           },
@@ -1039,7 +1224,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'payment': _i1.ParameterDescription(
               name: 'payment',
-              type: _i1.getType<_i26.PaymentRecord>(),
+              type: _i1.getType<_i28.PaymentRecord>(),
               nullable: false,
             ),
           },
@@ -1088,7 +1273,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i27.PollStatus?>(),
+              type: _i1.getType<_i29.PollStatus?>(),
               nullable: true,
             ),
           },
@@ -1126,7 +1311,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'poll': _i1.ParameterDescription(
               name: 'poll',
-              type: _i1.getType<_i28.SocietyPoll>(),
+              type: _i1.getType<_i30.SocietyPoll>(),
               nullable: false,
             ),
             'options': _i1.ParameterDescription(
@@ -1212,7 +1397,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'sub': _i1.ParameterDescription(
               name: 'sub',
-              type: _i1.getType<_i29.SocietySubscription>(),
+              type: _i1.getType<_i31.SocietySubscription>(),
               nullable: false,
             ),
           },
@@ -1277,7 +1462,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i30.VisitorStatus?>(),
+              type: _i1.getType<_i32.VisitorStatus?>(),
               nullable: true,
             ),
           },
@@ -1299,7 +1484,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'entry': _i1.ParameterDescription(
               name: 'entry',
-              type: _i1.getType<_i31.VisitorEntry>(),
+              type: _i1.getType<_i33.VisitorEntry>(),
               nullable: false,
             ),
           },
@@ -1323,7 +1508,7 @@ class Endpoints extends _i1.EndpointDispatch {
             ),
             'status': _i1.ParameterDescription(
               name: 'status',
-              type: _i1.getType<_i30.VisitorStatus>(),
+              type: _i1.getType<_i32.VisitorStatus>(),
               nullable: false,
             ),
           },
@@ -1365,9 +1550,9 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i32.Endpoints()
+    modules['serverpod_auth_idp'] = _i34.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i33.Endpoints()
+    modules['serverpod_auth_core'] = _i35.Endpoints()
       ..initializeEndpoints(server);
   }
 }

@@ -31,34 +31,37 @@ import 'package:society_server/src/generated/communication/models/complaint.dart
 import 'package:society_server/src/generated/communication/models/complaint_status.dart'
     as _i11;
 import 'package:society_server/src/generated/core/models/society.dart' as _i12;
-import 'package:society_server/src/generated/core/models/flat.dart' as _i13;
+import 'package:society_server/src/generated/core/models/building.dart' as _i13;
+import 'package:society_server/src/generated/core/models/flat.dart' as _i14;
 import 'package:society_server/src/generated/core/models/society_user.dart'
-    as _i14;
-import 'package:society_server/src/generated/documents/models/society_document.dart'
     as _i15;
-import 'package:society_server/src/generated/documents/models/meeting_minutes.dart'
+import 'package:society_server/src/generated/core/models/society_invitation.dart'
     as _i16;
-import 'package:society_server/src/generated/emergency/models/sos_alert.dart'
+import 'package:society_server/src/generated/documents/models/society_document.dart'
     as _i17;
-import 'package:society_server/src/generated/greetings/greeting.dart' as _i18;
-import 'package:society_server/src/generated/maintenance/models/maintenance_bill.dart'
+import 'package:society_server/src/generated/documents/models/meeting_minutes.dart'
+    as _i18;
+import 'package:society_server/src/generated/emergency/models/sos_alert.dart'
     as _i19;
-import 'package:society_server/src/generated/maintenance/models/payment_record.dart'
-    as _i20;
-import 'package:society_server/src/generated/polling/models/society_poll.dart'
+import 'package:society_server/src/generated/greetings/greeting.dart' as _i20;
+import 'package:society_server/src/generated/maintenance/models/maintenance_bill.dart'
     as _i21;
-import 'package:society_server/src/generated/polling/models/poll_status.dart'
+import 'package:society_server/src/generated/maintenance/models/payment_record.dart'
     as _i22;
-import 'package:society_server/src/generated/polling/models/poll_option.dart'
+import 'package:society_server/src/generated/polling/models/society_poll.dart'
     as _i23;
-import 'package:society_server/src/generated/saas_admin/models/saas_metric_summary.dart'
+import 'package:society_server/src/generated/polling/models/poll_status.dart'
     as _i24;
-import 'package:society_server/src/generated/saas_admin/models/society_subscription.dart'
+import 'package:society_server/src/generated/polling/models/poll_option.dart'
     as _i25;
-import 'package:society_server/src/generated/visitor/models/visitor_entry.dart'
+import 'package:society_server/src/generated/saas_admin/models/saas_metric_summary.dart'
     as _i26;
-import 'package:society_server/src/generated/visitor/models/visitor_status.dart'
+import 'package:society_server/src/generated/saas_admin/models/society_subscription.dart'
     as _i27;
+import 'package:society_server/src/generated/visitor/models/visitor_entry.dart'
+    as _i28;
+import 'package:society_server/src/generated/visitor/models/visitor_status.dart'
+    as _i29;
 import 'package:society_server/src/generated/protocol.dart';
 import 'package:society_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -1102,7 +1105,110 @@ class _SocietyEndpoint {
     });
   }
 
-  _i3.Future<List<_i13.Flat>> getFlats(
+  _i3.Future<_i12.Society> onboardNewSocietyWithAdmin(
+    _i1.TestSessionBuilder sessionBuilder,
+    _i12.Society society,
+    String adminName,
+    String adminPhone,
+    String adminEmail,
+    String planName,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'onboardNewSocietyWithAdmin',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'onboardNewSocietyWithAdmin',
+          parameters: _i1.testObjectToJson({
+            'society': society,
+            'adminName': adminName,
+            'adminPhone': adminPhone,
+            'adminEmail': adminEmail,
+            'planName': planName,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i12.Society>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i13.Building>> getBuildings(
+    _i1.TestSessionBuilder sessionBuilder,
+    int societyId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'getBuildings',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'getBuildings',
+          parameters: _i1.testObjectToJson({'societyId': societyId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i13.Building>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i13.Building> createBuilding(
+    _i1.TestSessionBuilder sessionBuilder,
+    _i13.Building building,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'createBuilding',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'createBuilding',
+          parameters: _i1.testObjectToJson({'building': building}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i13.Building>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i14.Flat>> getFlats(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId,
   ) async {
@@ -1125,7 +1231,7 @@ class _SocietyEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i13.Flat>>);
+                as _i3.Future<List<_i14.Flat>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1133,9 +1239,9 @@ class _SocietyEndpoint {
     });
   }
 
-  _i3.Future<_i13.Flat> createFlat(
+  _i3.Future<_i14.Flat> createFlat(
     _i1.TestSessionBuilder sessionBuilder,
-    _i13.Flat flat,
+    _i14.Flat flat,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1156,7 +1262,7 @@ class _SocietyEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i13.Flat>);
+                as _i3.Future<_i14.Flat>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1164,7 +1270,38 @@ class _SocietyEndpoint {
     });
   }
 
-  _i3.Future<List<_i14.SocietyUser>> getSocietyUsers(
+  _i3.Future<List<_i14.Flat>> bulkCreateFlats(
+    _i1.TestSessionBuilder sessionBuilder,
+    List<_i14.Flat> flats,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'bulkCreateFlats',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'bulkCreateFlats',
+          parameters: _i1.testObjectToJson({'flats': flats}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i14.Flat>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i15.SocietyUser>> getSocietyUsers(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId,
   ) async {
@@ -1187,7 +1324,7 @@ class _SocietyEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i14.SocietyUser>>);
+                as _i3.Future<List<_i15.SocietyUser>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1195,9 +1332,9 @@ class _SocietyEndpoint {
     });
   }
 
-  _i3.Future<_i14.SocietyUser> createSocietyUser(
+  _i3.Future<_i15.SocietyUser> createSocietyUser(
     _i1.TestSessionBuilder sessionBuilder,
-    _i14.SocietyUser user,
+    _i15.SocietyUser user,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1218,7 +1355,135 @@ class _SocietyEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i14.SocietyUser>);
+                as _i3.Future<_i15.SocietyUser>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i16.SocietyInvitation> createInvitation(
+    _i1.TestSessionBuilder sessionBuilder,
+    _i16.SocietyInvitation invitation,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'createInvitation',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'createInvitation',
+          parameters: _i1.testObjectToJson({'invitation': invitation}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i16.SocietyInvitation>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i16.SocietyInvitation>> bulkCreateInvitations(
+    _i1.TestSessionBuilder sessionBuilder,
+    List<_i16.SocietyInvitation> invitations,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'bulkCreateInvitations',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'bulkCreateInvitations',
+          parameters: _i1.testObjectToJson({'invitations': invitations}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i16.SocietyInvitation>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i16.SocietyInvitation>> getInvitations(
+    _i1.TestSessionBuilder sessionBuilder,
+    int societyId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'getInvitations',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'getInvitations',
+          parameters: _i1.testObjectToJson({'societyId': societyId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i16.SocietyInvitation>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i15.SocietyUser?> verifyAndAcceptInvitation(
+    _i1.TestSessionBuilder sessionBuilder,
+    String inviteCode,
+    String phone,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'verifyAndAcceptInvitation',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'verifyAndAcceptInvitation',
+          parameters: _i1.testObjectToJson({
+            'inviteCode': inviteCode,
+            'phone': phone,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i15.SocietyUser?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1237,7 +1502,7 @@ class _DocumentEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i15.SocietyDocument>> getDocuments(
+  _i3.Future<List<_i17.SocietyDocument>> getDocuments(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId, {
     required bool includeCommitteeOnly,
@@ -1264,7 +1529,7 @@ class _DocumentEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i15.SocietyDocument>>);
+                as _i3.Future<List<_i17.SocietyDocument>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1272,9 +1537,9 @@ class _DocumentEndpoint {
     });
   }
 
-  _i3.Future<_i15.SocietyDocument> uploadDocument(
+  _i3.Future<_i17.SocietyDocument> uploadDocument(
     _i1.TestSessionBuilder sessionBuilder,
-    _i15.SocietyDocument doc,
+    _i17.SocietyDocument doc,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1295,7 +1560,7 @@ class _DocumentEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i15.SocietyDocument>);
+                as _i3.Future<_i17.SocietyDocument>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1303,7 +1568,7 @@ class _DocumentEndpoint {
     });
   }
 
-  _i3.Future<List<_i16.MeetingMinutes>> getMeetingMinutes(
+  _i3.Future<List<_i18.MeetingMinutes>> getMeetingMinutes(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId,
   ) async {
@@ -1326,7 +1591,7 @@ class _DocumentEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i16.MeetingMinutes>>);
+                as _i3.Future<List<_i18.MeetingMinutes>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1334,9 +1599,9 @@ class _DocumentEndpoint {
     });
   }
 
-  _i3.Future<_i16.MeetingMinutes> recordMeetingMinutes(
+  _i3.Future<_i18.MeetingMinutes> recordMeetingMinutes(
     _i1.TestSessionBuilder sessionBuilder,
-    _i16.MeetingMinutes minutes,
+    _i18.MeetingMinutes minutes,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1357,7 +1622,7 @@ class _DocumentEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i16.MeetingMinutes>);
+                as _i3.Future<_i18.MeetingMinutes>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1376,9 +1641,9 @@ class _SosEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i17.SosAlert> raiseSosAlert(
+  _i3.Future<_i19.SosAlert> raiseSosAlert(
     _i1.TestSessionBuilder sessionBuilder,
-    _i17.SosAlert alert,
+    _i19.SosAlert alert,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1399,7 +1664,7 @@ class _SosEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i17.SosAlert>);
+                as _i3.Future<_i19.SosAlert>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1407,7 +1672,7 @@ class _SosEndpoint {
     });
   }
 
-  _i3.Future<List<_i17.SosAlert>> getActiveSosAlerts(
+  _i3.Future<List<_i19.SosAlert>> getActiveSosAlerts(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId,
   ) async {
@@ -1430,7 +1695,7 @@ class _SosEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i17.SosAlert>>);
+                as _i3.Future<List<_i19.SosAlert>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1438,7 +1703,7 @@ class _SosEndpoint {
     });
   }
 
-  _i3.Future<_i17.SosAlert?> acknowledgeSos(
+  _i3.Future<_i19.SosAlert?> acknowledgeSos(
     _i1.TestSessionBuilder sessionBuilder,
     int alertId,
     String acknowledgedByName,
@@ -1465,7 +1730,7 @@ class _SosEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i17.SosAlert?>);
+                as _i3.Future<_i19.SosAlert?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1473,7 +1738,7 @@ class _SosEndpoint {
     });
   }
 
-  _i3.Future<_i17.SosAlert?> resolveSos(
+  _i3.Future<_i19.SosAlert?> resolveSos(
     _i1.TestSessionBuilder sessionBuilder,
     int alertId,
     String resolvedByName,
@@ -1502,7 +1767,7 @@ class _SosEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i17.SosAlert?>);
+                as _i3.Future<_i19.SosAlert?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1521,7 +1786,7 @@ class _GreetingEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i18.Greeting> hello(
+  _i3.Future<_i20.Greeting> hello(
     _i1.TestSessionBuilder sessionBuilder,
     String name,
   ) async {
@@ -1544,7 +1809,7 @@ class _GreetingEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i18.Greeting>);
+                as _i3.Future<_i20.Greeting>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1563,7 +1828,7 @@ class _MaintenanceEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i19.MaintenanceBill>> getBills(
+  _i3.Future<List<_i21.MaintenanceBill>> getBills(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId, {
     String? flatNumber,
@@ -1590,7 +1855,7 @@ class _MaintenanceEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i19.MaintenanceBill>>);
+                as _i3.Future<List<_i21.MaintenanceBill>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1598,9 +1863,9 @@ class _MaintenanceEndpoint {
     });
   }
 
-  _i3.Future<_i19.MaintenanceBill> createBill(
+  _i3.Future<_i21.MaintenanceBill> createBill(
     _i1.TestSessionBuilder sessionBuilder,
-    _i19.MaintenanceBill bill,
+    _i21.MaintenanceBill bill,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1621,7 +1886,7 @@ class _MaintenanceEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i19.MaintenanceBill>);
+                as _i3.Future<_i21.MaintenanceBill>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1629,9 +1894,9 @@ class _MaintenanceEndpoint {
     });
   }
 
-  _i3.Future<_i20.PaymentRecord> recordPayment(
+  _i3.Future<_i22.PaymentRecord> recordPayment(
     _i1.TestSessionBuilder sessionBuilder,
-    _i20.PaymentRecord payment,
+    _i22.PaymentRecord payment,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1652,7 +1917,7 @@ class _MaintenanceEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i20.PaymentRecord>);
+                as _i3.Future<_i22.PaymentRecord>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1660,7 +1925,7 @@ class _MaintenanceEndpoint {
     });
   }
 
-  _i3.Future<List<_i20.PaymentRecord>> getPayments(
+  _i3.Future<List<_i22.PaymentRecord>> getPayments(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId,
   ) async {
@@ -1683,7 +1948,7 @@ class _MaintenanceEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i20.PaymentRecord>>);
+                as _i3.Future<List<_i22.PaymentRecord>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1702,10 +1967,10 @@ class _PollEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i21.SocietyPoll>> getPolls(
+  _i3.Future<List<_i23.SocietyPoll>> getPolls(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId, {
-    _i22.PollStatus? status,
+    _i24.PollStatus? status,
   }) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1729,7 +1994,7 @@ class _PollEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i21.SocietyPoll>>);
+                as _i3.Future<List<_i23.SocietyPoll>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1737,7 +2002,7 @@ class _PollEndpoint {
     });
   }
 
-  _i3.Future<List<_i23.PollOption>> getPollOptions(
+  _i3.Future<List<_i25.PollOption>> getPollOptions(
     _i1.TestSessionBuilder sessionBuilder,
     int pollId,
   ) async {
@@ -1760,7 +2025,7 @@ class _PollEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i23.PollOption>>);
+                as _i3.Future<List<_i25.PollOption>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1768,9 +2033,9 @@ class _PollEndpoint {
     });
   }
 
-  _i3.Future<_i21.SocietyPoll> createPoll(
+  _i3.Future<_i23.SocietyPoll> createPoll(
     _i1.TestSessionBuilder sessionBuilder,
-    _i21.SocietyPoll poll,
+    _i23.SocietyPoll poll,
     List<String> options,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -1795,7 +2060,7 @@ class _PollEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i21.SocietyPoll>);
+                as _i3.Future<_i23.SocietyPoll>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1853,7 +2118,7 @@ class _SaasAdminEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i24.SaasMetricSummary> getMetricSummary(
+  _i3.Future<_i26.SaasMetricSummary> getMetricSummary(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -1875,7 +2140,7 @@ class _SaasAdminEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i24.SaasMetricSummary>);
+                as _i3.Future<_i26.SaasMetricSummary>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1883,7 +2148,7 @@ class _SaasAdminEndpoint {
     });
   }
 
-  _i3.Future<List<_i25.SocietySubscription>> getAllSubscriptions(
+  _i3.Future<List<_i27.SocietySubscription>> getAllSubscriptions(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -1905,7 +2170,7 @@ class _SaasAdminEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i25.SocietySubscription>>);
+                as _i3.Future<List<_i27.SocietySubscription>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1913,9 +2178,9 @@ class _SaasAdminEndpoint {
     });
   }
 
-  _i3.Future<_i25.SocietySubscription> createSubscription(
+  _i3.Future<_i27.SocietySubscription> createSubscription(
     _i1.TestSessionBuilder sessionBuilder,
-    _i25.SocietySubscription sub,
+    _i27.SocietySubscription sub,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -1936,7 +2201,7 @@ class _SaasAdminEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i25.SocietySubscription>);
+                as _i3.Future<_i27.SocietySubscription>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1944,7 +2209,7 @@ class _SaasAdminEndpoint {
     });
   }
 
-  _i3.Future<_i25.SocietySubscription?> updateSubscriptionStatus(
+  _i3.Future<_i27.SocietySubscription?> updateSubscriptionStatus(
     _i1.TestSessionBuilder sessionBuilder,
     int subscriptionId,
     String status,
@@ -1971,7 +2236,7 @@ class _SaasAdminEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i25.SocietySubscription?>);
+                as _i3.Future<_i27.SocietySubscription?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1990,12 +2255,12 @@ class _VisitorEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<List<_i26.VisitorEntry>> getVisitors(
+  _i3.Future<List<_i28.VisitorEntry>> getVisitors(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId, {
     int? complexId,
     String? flatNumber,
-    _i27.VisitorStatus? status,
+    _i29.VisitorStatus? status,
   }) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -2021,7 +2286,7 @@ class _VisitorEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<List<_i26.VisitorEntry>>);
+                as _i3.Future<List<_i28.VisitorEntry>>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -2029,9 +2294,9 @@ class _VisitorEndpoint {
     });
   }
 
-  _i3.Future<_i26.VisitorEntry> createVisitorEntry(
+  _i3.Future<_i28.VisitorEntry> createVisitorEntry(
     _i1.TestSessionBuilder sessionBuilder,
-    _i26.VisitorEntry entry,
+    _i28.VisitorEntry entry,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -2052,7 +2317,7 @@ class _VisitorEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i26.VisitorEntry>);
+                as _i3.Future<_i28.VisitorEntry>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -2060,10 +2325,10 @@ class _VisitorEndpoint {
     });
   }
 
-  _i3.Future<_i26.VisitorEntry?> updateVisitorStatus(
+  _i3.Future<_i28.VisitorEntry?> updateVisitorStatus(
     _i1.TestSessionBuilder sessionBuilder,
     int visitorId,
-    _i27.VisitorStatus status,
+    _i29.VisitorStatus status,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -2087,7 +2352,7 @@ class _VisitorEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i26.VisitorEntry?>);
+                as _i3.Future<_i28.VisitorEntry?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -2095,7 +2360,7 @@ class _VisitorEndpoint {
     });
   }
 
-  _i3.Future<_i26.VisitorEntry?> verifyVisitorPasscode(
+  _i3.Future<_i28.VisitorEntry?> verifyVisitorPasscode(
     _i1.TestSessionBuilder sessionBuilder,
     int societyId,
     String passcode,
@@ -2122,7 +2387,7 @@ class _VisitorEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i26.VisitorEntry?>);
+                as _i3.Future<_i28.VisitorEntry?>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

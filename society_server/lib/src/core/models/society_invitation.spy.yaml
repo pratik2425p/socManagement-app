@@ -1,0 +1,14 @@
+class: SocietyInvitation
+table: society_invitation
+fields:
+  societyId: int
+  flatNumber: String
+  inviteeName: String
+  phone: String
+  email: String?
+  role: UserRole
+  occupancyType: String
+  inviteCode: String
+  status: String
+  expiresAt: DateTime
+  createdAt: DateTime

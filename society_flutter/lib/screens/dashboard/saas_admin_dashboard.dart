@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../services/society_state.dart';
 import '../../theme/app_theme.dart';
+import '../saas/super_admin_portal_screen.dart';
 
 class SaasAdminDashboard extends StatelessWidget {
   final SocietyState state;
@@ -107,21 +108,50 @@ class SaasAdminDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
 
-          // Action Button: Onboard Society
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.domain_add),
-              label: const Text(
-                'Onboard New Housing Society to SaaS',
-                style: TextStyle(fontWeight: FontWeight.bold),
+          // Action Buttons: Onboard Society & Open Super Admin Hub
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.domain_add),
+                    label: const Text(
+                      'Onboard Society',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4338CA),
+                    ),
+                    onPressed: () => _showOnboardDialog(context),
+                  ),
+                ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4338CA),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 4,
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.hub_outlined, color: Color(0xFF4338CA)),
+                    label: const Text(
+                      'Super Admin Portal',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4338CA)),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF4338CA), width: 1.5),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (ctx) => SuperAdminPortalScreen(state: state)),
+                      );
+                    },
+                  ),
+                ),
               ),
-              onPressed: () => _showOnboardDialog(context),
-            ),
+            ],
           ),
           const SizedBox(height: 22),
 

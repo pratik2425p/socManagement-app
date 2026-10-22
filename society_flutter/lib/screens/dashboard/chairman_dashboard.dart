@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../services/society_state.dart';
 import '../../theme/app_theme.dart';
+import '../onboarding/society_setup_wizard_screen.dart';
+import '../onboarding/member_invitations_screen.dart';
 
 class ChairmanDashboard extends StatelessWidget {
   final SocietyState state;
@@ -110,6 +112,69 @@ class ChairmanDashboard extends StatelessWidget {
                     'Chairman Mode',
                     style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Society Admin Onboarding & Wizard Shortcuts
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.hub_rounded, color: Color(0xFF1D4ED8), size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Society Admin Onboarding Center',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E40AF)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Setup wings, auto-generate flats, import members via Excel/CSV, and dispatch secure invitations.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF1E3A8A)),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (ctx) => SocietySetupWizardScreen(state: state)),
+                          );
+                        },
+                        icon: const Icon(Icons.settings_suggest, size: 16, color: Colors.white),
+                        label: const Text('Setup Wizard', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1D4ED8)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (ctx) => MemberInvitationsScreen(state: state)),
+                          );
+                        },
+                        icon: const Icon(Icons.mark_email_read_outlined, size: 16, color: Colors.white),
+                        label: const Text('Invitations', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentTeal),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

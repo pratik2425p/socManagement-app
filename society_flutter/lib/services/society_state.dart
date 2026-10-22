@@ -49,6 +49,11 @@ class SocietyState extends ChangeNotifier {
   List<SosAlert> _sosAlerts = [];
   List<SocietySubscription> _subscriptions = [];
   SaasMetricSummary? _saasMetrics;
+  List<Society> _societies = [];
+  List<Building> _buildings = [];
+  List<Flat> _flats = [];
+  List<SocietyInvitation> _invitations = [];
+  int _currentSocietyId = 1;
 
   List<MaintenanceBill> get bills => _bills;
   List<VisitorEntry> get visitors => _visitors;
@@ -59,6 +64,11 @@ class SocietyState extends ChangeNotifier {
   List<SocietyDocument> get documents => _documents;
   List<MeetingMinutes> get meetingMinutes => _meetingMinutes;
   List<SocietyPoll> get polls => _polls;
+  List<Society> get societies => _societies;
+  List<Building> get buildings => _buildings;
+  List<Flat> get flats => _flats;
+  List<SocietyInvitation> get invitations => _invitations;
+  int get currentSocietyId => _currentSocietyId;
   List<PollOption> getPollOptions(int pollId) => _pollOptions[pollId] ?? [];
   List<SosAlert> get sosAlerts => _sosAlerts;
   List<SosAlert> get activeSosAlerts =>
@@ -88,12 +98,17 @@ class SocietyState extends ChangeNotifier {
 
     try {
       final socs = await client.society.getSocieties();
+      _societies = socs;
       if (socs.isNotEmpty) {
         _societyName = socs.first.name;
+        _currentSocietyId = socs.first.id ?? 1;
       }
 
       await Future.wait([
         _loadUsers(),
+        _loadBuildings(),
+        _loadFlats(),
+        _loadInvitations(),
         _loadBills(),
         _loadVisitors(),
         _loadVouchers(),
@@ -269,6 +284,236 @@ class SocietyState extends ChangeNotifier {
       _saasMetrics = await client.saasAdmin.getMetricSummary();
     } catch (e) {
       debugPrint('Error loading subscriptions: $e');
+    }
+  }
+
+  Future<void> loadSocieties() async {
+    try {
+      _societies = await client.society.getSocieties();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading societies: $e');
+    }
+  }
+
+  Future<void> switchSociety(Society society) async {
+    _currentSocietyId = society.id ?? 1;
+    _societyName = society.name;
+    await Future.wait([
+      _loadUsers(),
+      _loadBuildings(),
+      _loadFlats(),
+      _loadInvitations(),
+      _loadBills(),
+      _loadVisitors(),
+      _loadVouchers(),
+      _loadLedger(),
+      _loadComplaints(),
+      _loadNotices(),
+      _loadDocuments(),
+      _loadMeetingMinutes(),
+      _loadPolls(),
+      _loadSosAlerts(),
+    ]);
+    notifyListeners();
+  }
+
+  Future<void> _loadBuildings() async {
+    try {
+      _buildings = await client.society.getBuildings(_currentSocietyId);
+    } catch (e) {
+      debugPrint('Error loading buildings: $e');
+    }
+  }
+
+  Future<void> _loadFlats() async {
+    try {
+      _flats = await client.society.getFlats(_currentSocietyId);
+    } catch (e) {
+      debugPrint('Error loading flats: $e');
+    }
+  }
+
+  Future<void> _loadInvitations() async {
+    try {
+      _invitations = await client.society.getInvitations(_currentSocietyId);
+    } catch (e) {
+      debugPrint('Error loading invitations: $e');
+    }
+  }
+
+  Future<void> refreshInvitations() async {
+    await _loadInvitations();
+    notifyListeners();
+  }
+
+  Future<Society?> onboardNewSociety({
+    required String name,
+    required String code,
+    required String address,
+    required String city,
+    required String stateName,
+    required String pincode,
+    required int totalFlats,
+    required String planName,
+    required String adminName,
+    required String adminPhone,
+    required String adminEmail,
+  }) async {
+    final society = Society(
+      name: name,
+      code: code.toUpperCase(),
+      address: address,
+      city: city,
+      state: stateName,
+      pincode: pincode,
+      totalFlats: totalFlats,
+      subscriptionPlan: planName,
+      subscriptionStatus: 'active',
+      createdAt: DateTime.now(),
+    );
+
+    try {
+      final created = await client.society.onboardNewSocietyWithAdmin(
+        society,
+        adminName,
+        adminPhone,
+        adminEmail,
+        planName,
+      );
+      await loadSocieties();
+      await _loadSubscriptions();
+      notifyListeners();
+      return created;
+    } catch (e) {
+      debugPrint('Error onboarding new society: $e');
+      return null;
+    }
+  }
+
+  Future<Building?> addBuilding({
+    required String name,
+    required int totalFloors,
+  }) async {
+    final b = Building(
+      societyId: _currentSocietyId,
+      name: name,
+      totalFloors: totalFloors,
+      createdAt: DateTime.now(),
+    );
+    try {
+      final created = await client.society.createBuilding(b);
+      await _loadBuildings();
+      notifyListeners();
+      return created;
+    } catch (e) {
+      debugPrint('Error creating building: $e');
+      return null;
+    }
+  }
+
+  Future<int> autoGenerateFlatsForWing({
+    required int buildingId,
+    required String wingName,
+    required int floors,
+    required int flatsPerFloor,
+    double sqFt = 950.0,
+  }) async {
+    final newFlats = <Flat>[];
+    for (int floor = 1; floor <= floors; floor++) {
+      for (int unit = 1; unit <= flatsPerFloor; unit++) {
+        final flatNum = '$wingName-${floor * 100 + unit}';
+        if (!_flats.any((f) => f.flatNumber == flatNum)) {
+          newFlats.add(Flat(
+            societyId: _currentSocietyId,
+            buildingId: buildingId,
+            flatNumber: flatNum,
+            floor: floor,
+            squareFeet: sqFt,
+            intercomNumber: '${floor * 100 + unit}',
+            status: 'unassigned',
+          ));
+        }
+      }
+    }
+
+    if (newFlats.isEmpty) return 0;
+    try {
+      final inserted = await client.society.bulkCreateFlats(newFlats);
+      await _loadFlats();
+      notifyListeners();
+      return inserted.length;
+    } catch (e) {
+      debugPrint('Error auto-generating flats: $e');
+      return 0;
+    }
+  }
+
+  Future<SocietyInvitation?> sendInvitation({
+    required String flatNumber,
+    required String inviteeName,
+    required String phone,
+    String? email,
+    UserRole role = UserRole.resident,
+    String occupancyType = 'owner',
+  }) async {
+    final randomSuffix = (1000 + DateTime.now().millisecond * 7 % 9000).toString();
+    final cleanFlat = flatNumber.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    final code = 'INV-$cleanFlat-$randomSuffix'.toUpperCase();
+
+    final inv = SocietyInvitation(
+      societyId: _currentSocietyId,
+      flatNumber: flatNumber,
+      inviteeName: inviteeName,
+      phone: phone,
+      email: email,
+      role: role,
+      occupancyType: occupancyType,
+      inviteCode: code,
+      status: 'pending',
+      expiresAt: DateTime.now().add(const Duration(days: 14)),
+      createdAt: DateTime.now(),
+    );
+
+    try {
+      final created = await client.society.createInvitation(inv);
+      await _loadInvitations();
+      notifyListeners();
+      return created;
+    } catch (e) {
+      debugPrint('Error creating invitation: $e');
+      return null;
+    }
+  }
+
+  Future<int> bulkImportMembersAndInvite(List<SocietyInvitation> invites) async {
+    try {
+      final inserted = await client.society.bulkCreateInvitations(invites);
+      await _loadInvitations();
+      notifyListeners();
+      return inserted.length;
+    } catch (e) {
+      debugPrint('Error bulk importing invitations: $e');
+      return 0;
+    }
+  }
+
+  Future<SocietyUser?> acceptMemberInvitation({
+    required String inviteCode,
+    required String phone,
+  }) async {
+    try {
+      final user = await client.society.verifyAndAcceptInvitation(inviteCode, phone);
+      if (user != null) {
+        await _loadUsers();
+        await _loadInvitations();
+        setActiveUser(user);
+        notifyListeners();
+      }
+      return user;
+    } catch (e) {
+      debugPrint('Error accepting invitation: $e');
+      return null;
     }
   }
 

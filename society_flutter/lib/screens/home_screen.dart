@@ -10,6 +10,8 @@ import 'dashboard/saas_admin_dashboard.dart';
 import 'documents/document_vault_screen.dart';
 import 'polling/polling_screen.dart';
 import 'profile/user_management_sheet.dart';
+import 'saas/super_admin_portal_screen.dart';
+import 'onboarding/society_setup_wizard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final SocietyState state;
@@ -95,6 +97,28 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+          if (state.currentRole == UserRole.admin)
+            IconButton(
+              tooltip: 'SaaS Super Admin Platform',
+              icon: const Icon(Icons.hub_rounded),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (ctx) => SuperAdminPortalScreen(state: state)),
+                );
+              },
+            ),
+          if (state.currentRole == UserRole.chairman || state.currentRole == UserRole.committee)
+            IconButton(
+              tooltip: 'Society Setup Wizard',
+              icon: const Icon(Icons.settings_suggest_outlined),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (ctx) => SocietySetupWizardScreen(state: state)),
+                );
+              },
+            ),
           // Active User Profile & Fresh User Switcher Pill
           InkWell(
             onTap: () => showUserManagementSheet(context, state),

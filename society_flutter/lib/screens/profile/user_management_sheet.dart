@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../services/society_state.dart';
 import '../../theme/app_theme.dart';
+import '../onboarding/accept_invitation_screen.dart';
 
 void showUserManagementSheet(BuildContext context, SocietyState state) {
   showModalBottomSheet(
@@ -295,6 +296,26 @@ class _UserManagementBottomSheetState extends State<_UserManagementBottomSheet> 
                       backgroundColor: AppTheme.accentTeal,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (ctx) => AcceptInvitationScreen(state: state)),
+                      );
+                    },
+                    icon: const Icon(Icons.vpn_key_rounded, size: 18),
+                    label: const Text('Have Invitation Code? Accept & Join Flat'),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: BorderSide(color: Colors.grey.shade400),
                     ),
                   ),
                 ),
