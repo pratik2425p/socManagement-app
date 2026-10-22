@@ -1,0 +1,45 @@
+accounting:
+  - getVouchers:
+  - createVoucherRequest:
+  - approveVoucher:
+  - rejectVoucher:
+  - postVoucherToLedger:
+  - getLedgerEntries:
+  - getLedgerAccounts:
+emailIdp:
+  - login:
+  - startRegistration:
+  - verifyRegistrationCode:
+  - finishRegistration:
+  - startPasswordReset:
+  - verifyPasswordResetCode:
+  - finishPasswordReset:
+  - hasAccount:
+jwtRefresh:
+  - refreshAccessToken:
+communication:
+  - getNotices:
+  - createNotice:
+  - getComplaints:
+  - createComplaint:
+  - updateComplaintStatus:
+society:
+  - createSociety:
+  - getSocieties:
+  - getSocietyById:
+  - getFlats:
+  - createFlat:
+  - getSocietyUsers:
+  - createSocietyUser:
+greeting:
+  - hello:
+maintenance:
+  - getBills:
+  - createBill:
+  - recordPayment:
+  - getPayments:
+visitor:
+  - getVisitors:
+  - createVisitorEntry:
+  - updateVisitorStatus:
+  - verifyVisitorPasscode:

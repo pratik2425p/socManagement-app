@@ -1,0 +1,11 @@
+class: SocietyUser
+table: society_user
+fields:
+  societyId: int
+  fullName: String
+  phone: String
+  email: String
+  role: UserRole
+  flatNumber: String?
+  status: String
+  createdAt: DateTime

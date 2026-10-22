@@ -1,0 +1,10 @@
+class: Flat
+table: flat
+fields:
+  societyId: int
+  buildingId: int
+  flatNumber: String
+  floor: int
+  squareFeet: double
+  intercomNumber: String?
+  status: String

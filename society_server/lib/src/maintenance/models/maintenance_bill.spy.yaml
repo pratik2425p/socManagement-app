@@ -1,0 +1,13 @@
+class: MaintenanceBill
+table: maintenance_bill
+fields:
+  societyId: int
+  flatId: int
+  flatNumber: String
+  billNumber: String
+  billingMonth: String
+  dueDate: DateTime
+  amount: double
+  lateFee: double
+  status: BillStatus
+  issuedAt: DateTime

@@ -1,0 +1,14 @@
+class: PaymentRecord
+table: payment_record
+fields:
+  societyId: int
+  billId: int
+  flatId: int
+  flatNumber: String
+  payerName: String
+  amount: double
+  paymentMethod: String
+  transactionReference: String
+  receiptNumber: String
+  paymentDate: DateTime
+  isVerified: bool

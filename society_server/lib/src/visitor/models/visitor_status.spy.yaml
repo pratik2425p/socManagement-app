@@ -1,0 +1,8 @@
+enum: VisitorStatus
+values:
+  - expected
+  - waitingApproval
+  - approved
+  - inside
+  - exited
+  - rejected

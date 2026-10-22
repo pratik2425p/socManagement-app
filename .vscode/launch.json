@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "society_flutter",
+            "cwd": "${workspaceFolder}/society_flutter",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "society_server",
+            "cwd": "${workspaceFolder}/society_server",
+            "request": "launch",
+            "type": "dart",
+            "preLaunchTask": "docker_compose_up",
+            "program": "bin/main.dart",
+            "env": {
+                "SERVERPOD_PASSWORD_database": "Z0sAePlN-k54pVLdH9GD_WWsjdLREaBa"
+            },
+            "args": [
+                "--apply-migrations"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "society (full stack)",
+            "configurations": [
+                "society_server",
+                "society_flutter"
+            ],
+            "presentation": {
+                "order": 1
+            }
+        }
+    ]
+}

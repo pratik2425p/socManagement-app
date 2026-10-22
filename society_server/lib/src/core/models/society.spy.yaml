@@ -1,0 +1,14 @@
+class: Society
+table: society
+fields:
+  name: String
+  code: String
+  address: String
+  city: String
+  state: String
+  pincode: String
+  totalFlats: int
+  subscriptionPlan: String
+  subscriptionStatus: String
+  complexId: int?
+  createdAt: DateTime

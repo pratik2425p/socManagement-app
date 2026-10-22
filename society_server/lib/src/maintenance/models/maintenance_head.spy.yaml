@@ -1,0 +1,7 @@
+class: MaintenanceHead
+table: maintenance_head
+fields:
+  societyId: int
+  name: String
+  chargeType: String
+  rate: double

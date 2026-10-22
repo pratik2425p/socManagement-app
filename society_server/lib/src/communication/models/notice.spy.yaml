@@ -1,0 +1,11 @@
+class: Notice
+table: notice
+fields:
+  societyId: int
+  title: String
+  content: String
+  category: String
+  priority: String
+  postedByName: String
+  postedAt: DateTime
+  expiresAt: DateTime?

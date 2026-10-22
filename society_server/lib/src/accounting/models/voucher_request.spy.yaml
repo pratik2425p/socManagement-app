@@ -1,0 +1,15 @@
+class: VoucherRequest
+table: voucher_request
+fields:
+  societyId: int
+  voucherNumber: String
+  title: String
+  description: String
+  amount: double
+  category: String
+  requestedByName: String
+  status: VoucherStatus
+  rejectionReason: String?
+  approvedByName: String?
+  approvedAt: DateTime?
+  createdAt: DateTime

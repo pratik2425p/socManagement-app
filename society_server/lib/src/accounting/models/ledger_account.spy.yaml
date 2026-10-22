@@ -1,0 +1,8 @@
+class: LedgerAccount
+table: ledger_account
+fields:
+  societyId: int
+  accountCode: String
+  accountName: String
+  accountType: String
+  balance: double

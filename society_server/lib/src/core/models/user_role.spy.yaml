@@ -1,0 +1,8 @@
+enum: UserRole
+values:
+  - resident
+  - guard
+  - committee
+  - chairman
+  - accountant
+  - admin

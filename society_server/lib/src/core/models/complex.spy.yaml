@@ -1,0 +1,8 @@
+class: Complex
+table: complex
+fields:
+  name: String
+  address: String
+  city: String
+  pincode: String
+  createdAt: DateTime

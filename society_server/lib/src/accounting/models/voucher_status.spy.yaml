@@ -1,0 +1,6 @@
+enum: VoucherStatus
+values:
+  - pendingApproval
+  - approved
+  - rejected
+  - postedToLedger

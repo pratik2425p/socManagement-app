@@ -1,0 +1,7 @@
+class: Building
+table: building
+fields:
+  societyId: int
+  name: String
+  totalFloors: int
+  createdAt: DateTime

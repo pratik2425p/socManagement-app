@@ -1,0 +1,87 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter analyze society_flutter
+
+## exception
+
+_Exception: Exception: analysis server exited with code 64 and output:
+[stderr] 
+[stderr] Project
+[stderr]   compile    Compile Dart to various formats.
+[stderr]   create     Create a new Dart project.
+[stderr]   pub        Work with packages.
+[stderr]   run        Run a Dart program.
+[stderr]   test       Run tests for a project.
+[stderr] 
+[stderr] Source code
+[stderr]   analyze    Analyze Dart code in a directory.
+[stderr]   doc        Generate API documentation for Dart projects.
+[stderr]   fix        Apply automated fixes to Dart source code.
+[stderr]   format     Idiomatically format Dart source code.
+[stderr] 
+[stderr] Tools
+[stderr]   devtools   Open DevTools (optionally connecting to an existing application).
+[stderr]   info       Show diagnostic information about the installed tooling.
+[stderr] 
+[stderr] Run "dart help <command>" for more information about a command.
+[stderr] See https://dart.dev/tools/dart-tool for detailed documentation.
+
+```
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel stable, 3.35.4, on macOS 26.6.1 25G76 darwin-arm64, locale
+    en-IN) [228ms]
+    • Flutter version 3.35.4 on channel stable at
+      /Users/vicky/development/flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision d693b4b9db (1 year, 1 month ago), 2025-09-16 14:27:41
+      +0000
+    • Engine revision c298091351
+    • Dart version 3.9.2
+    • DevTools version 2.48.0
+    • Feature flags: enable-web, enable-linux-desktop, enable-macos-desktop,
+      enable-windows-desktop, enable-android, enable-ios, cli-animations,
+      enable-lldb-debugging
+
+[!] Android toolchain - develop for Android devices (Android SDK version 35.0.0)
+    [1,814ms]
+    • Android SDK at /Users/vicky/Library/Android/sdk
+    • Emulator version 37.1.11.0 (build_id 15917651) (CL:N/A)
+    • Platform android-36, build-tools 35.0.0
+    • Java binary at: /opt/homebrew/opt/openjdk@17/bin/java
+      This JDK is specified in your Flutter configuration.
+      To change the current JDK, run: `flutter config --jdk-dir="path/to/jdk"`.
+    • Java version OpenJDK Runtime Environment Homebrew (build 17.0.19+0)
+    ! Some Android licenses not accepted. To resolve this, run: flutter doctor
+      --android-licenses
+
+[!] Xcode - develop for iOS and macOS [1,019ms]
+    ✗ Xcode not installed; this is necessary for iOS and macOS development.
+      Download at https://developer.apple.com/xcode/.
+    • CocoaPods version 1.17.0
+
+[✓] Chrome - develop for the web [30ms]
+    • Chrome at /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+
+[!] Android Studio (not installed) [29ms]
+    • Android Studio not found; download from
+      https://developer.android.com/studio/index.html
+      (or visit https://flutter.dev/to/macos-android-setup for detailed
+      instructions).
+
+[✓] Connected device (2 available) [6.0s]
+    • macOS (desktop) • macos  • darwin-arm64   • macOS 26.6.1 25G76
+      darwin-arm64
+    • Chrome (web)    • chrome • web-javascript • Google Chrome 156.0.8078.47
+
+[✓] Network resources [690ms]
+    • All expected network resources are available.
+
+! Doctor found issues in 3 categories.
+```

@@ -1,0 +1,15 @@
+class: VisitorEntry
+table: visitor_entry
+fields:
+  societyId: int
+  complexId: int?
+  flatNumber: String
+  visitorName: String
+  phoneNumber: String
+  purpose: String
+  vehicleNumber: String?
+  passcode: String?
+  status: VisitorStatus
+  entryGate: String
+  checkInTime: DateTime?
+  checkOutTime: DateTime?

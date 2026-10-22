@@ -1,0 +1,12 @@
+class: LedgerEntry
+table: ledger_entry
+fields:
+  societyId: int
+  entryNumber: String
+  voucherId: int?
+  entryDate: DateTime
+  description: String
+  postedByName: String
+  totalDebit: double
+  totalCredit: double
+  postedAt: DateTime

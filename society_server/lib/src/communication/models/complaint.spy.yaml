@@ -1,0 +1,14 @@
+class: Complaint
+table: complaint
+fields:
+  societyId: int
+  flatNumber: String
+  reportedByName: String
+  title: String
+  description: String
+  category: String
+  status: ComplaintStatus
+  assignedTo: String?
+  resolutionNotes: String?
+  createdAt: DateTime
+  resolvedAt: DateTime?

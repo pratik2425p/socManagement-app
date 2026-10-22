@@ -1,0 +1,6 @@
+enum: ComplaintStatus
+values:
+  - open
+  - inProgress
+  - resolved
+  - closed
