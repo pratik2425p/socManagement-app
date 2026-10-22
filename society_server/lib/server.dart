@@ -6,6 +6,7 @@ import 'package:serverpod_auth_idp_server/providers/email.dart';
 
 import 'src/generated/endpoints.dart';
 import 'src/generated/protocol.dart';
+import 'src/seed.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/root.dart';
 
@@ -75,6 +76,9 @@ void run(List<String> args) async {
 
   // Start the server.
   await pod.start();
+
+  // Seed baseline data if empty.
+  await seedInitialData(pod);
 }
 
 void _sendRegistrationCode(

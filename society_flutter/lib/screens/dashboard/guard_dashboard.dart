@@ -238,10 +238,10 @@ class _GuardDashboardState extends State<GuardDashboard> {
                           backgroundColor: AppTheme.successGreen,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           if (_passcodeController.text.isNotEmpty) {
-                            final ok = state.guardVerifyPasscode(_passcodeController.text.trim());
-                            if (ok) {
+                            final ok = await state.guardVerifyPasscode(_passcodeController.text.trim());
+                            if (ok && context.mounted) {
                               _passcodeController.clear();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -249,7 +249,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
                                   content: Text('Passcode Verified! Entry Granted & Gate Opened.'),
                                 ),
                               );
-                            } else {
+                            } else if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   backgroundColor: AppTheme.dangerRed,

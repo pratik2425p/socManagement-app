@@ -233,13 +233,13 @@ class PollingScreen extends StatelessWidget {
                                       side: const BorderSide(color: AppTheme.primaryNavy),
                                       padding: const EdgeInsets.symmetric(vertical: 8),
                                     ),
-                                    onPressed: () {
-                                      final ok = state.castVote(
+                                    onPressed: () async {
+                                      final ok = await state.castVote(
                                         pollId: poll.id!,
                                         flatNumber: state.currentFlat,
                                         optionId: opt.id!,
                                       );
-                                      if (ok) {
+                                      if (ok && context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             backgroundColor: AppTheme.successGreen,

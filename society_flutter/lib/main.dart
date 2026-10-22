@@ -23,7 +23,7 @@ void main() async {
 
   client.auth.initialize();
 
-  globalSocietyState = SocietyState();
+  globalSocietyState = SocietyState(client: client);
 
   runApp(const SocietyApp());
 }
