@@ -1,6 +1,63 @@
-# Files and directories created by pub
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Dart & Flutter
 .dart_tool/
 .packages
-
-# Pubspec overrides
+.pub-cache/
+.pub/
+build/
+**/build/
+**/.dart_tool/
+**/.packages
+**/.pub-cache/
+**/.pub/
 pubspec_overrides.yaml
+.flutter-plugins
+.flutter-plugins-dependencies
+web/app/
+**/web/app/
+
+# Android
+.gradle/
+**/android/.gradle/
+**/android/captures/
+**/android/gradleBuild/
+**/android/app/build/
+*.iml
+*.ipr
+*.iws
+.idea/
+local.properties
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.framework
+
+# Node.js
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Serverpod & Secrets (CRITICAL: Do NOT push database passwords to public Git!)
+society_server/config/passwords.yaml
+config/passwords.yaml
+**/passwords.yaml
+*.env
+*.env.*
+!*.env.example
+config/firebase_service_account_key.json
+**/firebase_service_account_key.json
+
+# Binaries & Logs
+*.apk
+*.aab
+*.log

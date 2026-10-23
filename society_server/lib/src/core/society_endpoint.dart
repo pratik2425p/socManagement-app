@@ -55,18 +55,72 @@ class SocietyEndpoint extends Endpoint {
     );
     await SocietySubscription.db.insertRow(session, sub);
 
-    // 3. Create primary society admin / chairman
+    // 3. Parse Admin Flat Number & Create primary society admin / chairman
+    String cleanEmail = adminEmail;
+    String assignedFlat = 'Admin Office';
+    if (adminEmail.contains('#')) {
+      final parts = adminEmail.split('#');
+      cleanEmail = parts[0].trim();
+      if (parts.length > 1 && parts[1].trim().isNotEmpty) {
+        assignedFlat = parts[1].trim().toUpperCase();
+      }
+    } else if (adminEmail.contains('|')) {
+      final parts = adminEmail.split('|');
+      cleanEmail = parts[0].trim();
+      if (parts.length > 1 && parts[1].trim().isNotEmpty) {
+        assignedFlat = parts[1].trim().toUpperCase();
+      }
+    }
+
     final adminUser = SocietyUser(
       societyId: societyId,
       fullName: adminName,
       phone: adminPhone,
-      email: adminEmail,
+      email: cleanEmail,
       role: UserRole.chairman,
-      flatNumber: 'Admin Office',
+      flatNumber: assignedFlat,
       status: 'active',
       createdAt: DateTime.now(),
     );
-    await SocietyUser.db.insertRow(session, adminUser);
+    final createdUser = await SocietyUser.db.insertRow(session, adminUser);
+
+    // If flat is specified and not 'Admin Office', ensure Flat record exists in PostgreSQL!
+    if (assignedFlat != 'Admin Office') {
+      final existingFlats = await Flat.db.find(
+        session,
+        where: (t) => t.societyId.equals(societyId) & t.flatNumber.equals(assignedFlat),
+      );
+      if (existingFlats.isEmpty) {
+        var building = await Building.db.findFirstRow(
+          session,
+          where: (t) => t.societyId.equals(societyId),
+        );
+        if (building == null) {
+          building = await Building.db.insertRow(
+            session,
+            Building(
+              societyId: societyId,
+              name: 'Wing A',
+              totalFloors: 10,
+              createdAt: DateTime.now(),
+            ),
+          );
+        }
+
+        final digits = int.tryParse(assignedFlat.replaceAll(RegExp(r'[^0-9]'), '')) ?? 101;
+        await Flat.db.insertRow(
+          session,
+          Flat(
+            societyId: societyId,
+            buildingId: building.id ?? 1,
+            flatNumber: assignedFlat,
+            floor: (digits ~/ 100) > 0 ? (digits ~/ 100) : 1,
+            squareFeet: 1050.0,
+            status: 'Occupied',
+          ),
+        );
+      }
+    }
 
     return createdSociety;
   }
@@ -195,5 +249,16 @@ class SocietyEndpoint extends Endpoint {
     );
 
     return await SocietyUser.db.insertRow(session, newUser);
+  }
+
+  /// Login with phone number for Society Admin, Staff, or Resident
+  Future<SocietyUser?> loginWithPhone(Session session, String phone) async {
+    final cleanPhone = phone.trim().replaceAll(RegExp(r'[^0-9]'), '');
+    final users = await SocietyUser.db.find(
+      session,
+      where: (t) => t.phone.equals(cleanPhone) | t.phone.equals(phone.trim()),
+    );
+    if (users.isEmpty) return null;
+    return users.first;
   }
 }

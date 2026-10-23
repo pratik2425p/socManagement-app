@@ -14,7 +14,7 @@ class PollingScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Democratic Polling & Resolutions'),
+        title: const Text('Resolutions & Polling', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -35,9 +35,9 @@ class PollingScreen extends StatelessWidget {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Democratic Principle: 1 Flat = 1 Vote. Every registered flat has equal voting power for society decisions.',
+                      'Democratic Principle: 1 Flat = 1 Vote & Secret Ballot. Individual voter choices are strictly anonymous; only aggregate results and flat participation status are visible.',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1E40AF),
                       ),
@@ -52,12 +52,17 @@ class PollingScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Active Society Resolutions',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                const Expanded(
+                  child: Text(
+                    'Active Resolutions',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
-                  'Flat ${state.currentFlat} Voting Console',
+                  state.currentFlat.isNotEmpty ? 'Flat ${state.currentFlat}' : 'Voting Console',
                   style: const TextStyle(color: AppTheme.primaryNavy, fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ],
@@ -82,20 +87,41 @@ class PollingScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppTheme.infoBlue.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              poll.category,
-                              style: const TextStyle(
-                                color: AppTheme.infoBlue,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.infoBlue.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  poll.category,
+                                  style: const TextStyle(
+                                    color: AppTheme.infoBlue,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3E8FF),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFD8B4FE)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.lock, size: 10, color: Color(0xFF7E22CE)),
+                                    SizedBox(width: 3),
+                                    Text('SECRET BALLOT', style: TextStyle(color: Color(0xFF7E22CE), fontSize: 9, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                           if (hasVoted)
                             Container(

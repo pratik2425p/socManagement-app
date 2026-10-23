@@ -10,7 +10,6 @@ import 'dashboard/saas_admin_dashboard.dart';
 import 'documents/document_vault_screen.dart';
 import 'polling/polling_screen.dart';
 import 'profile/user_management_sheet.dart';
-import 'saas/super_admin_portal_screen.dart';
 import 'onboarding/society_setup_wizard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,170 +39,102 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
+  String _getRoleLabel(UserRole role) {
+    switch (role) {
+      case UserRole.resident:
+        return 'Resident';
+      case UserRole.guard:
+        return 'Security Guard';
+      case UserRole.chairman:
+        return 'Society Admin';
+      case UserRole.committee:
+        return 'Committee Member';
+      case UserRole.accountant:
+        return 'Accountant';
+      case UserRole.admin:
+        return 'SaaS Admin';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
 
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        titleSpacing: 16,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               state.currentRole == UserRole.admin
                   ? 'SaaS Super Admin Platform'
-                  : state.societyName,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  : (state.societyName.isNotEmpty ? state.societyName : 'Housing Society'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(height: 2),
             Row(
               children: [
-                const Icon(Icons.circle, size: 8, color: AppTheme.successGreen),
-                const SizedBox(width: 4),
-                Text(
-                  state.currentRole == UserRole.admin
-                      ? 'Global Cloud Multi-Tenant Engine'
-                      : 'Connected to Serverpod Cloud',
-                  style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8)),
+                const Icon(Icons.circle, size: 7, color: AppTheme.successGreen),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    state.currentRole == UserRole.admin
+                        ? 'Global SaaS Platform'
+                        : '${state.currentSociety?.code != null && state.currentSociety!.code.isNotEmpty ? "Reg: ${state.currentSociety!.code} • " : ""}${state.currentUserName.isNotEmpty ? "${state.currentUserName} (${_getRoleLabel(state.currentRole)})" : _getRoleLabel(state.currentRole)}',
+                    style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.85)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
           ],
         ),
         actions: [
-          // Quick shortcuts to Polling & Documents
-          IconButton(
-            tooltip: 'Democratic Polling & Voting',
-            icon: const Icon(Icons.how_to_vote_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => PollingScreen(state: state),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            tooltip: 'Document Vault & AGM Minutes',
-            icon: const Icon(Icons.folder_shared_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => DocumentVaultScreen(state: state),
-                ),
-              );
-            },
-          ),
-          if (state.currentRole == UserRole.admin)
-            IconButton(
-              tooltip: 'SaaS Super Admin Platform',
-              icon: const Icon(Icons.hub_rounded),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (ctx) => SuperAdminPortalScreen(state: state)),
-                );
-              },
-            ),
-          if (state.currentRole == UserRole.chairman || state.currentRole == UserRole.committee)
-            IconButton(
-              tooltip: 'Society Setup Wizard',
-              icon: const Icon(Icons.settings_suggest_outlined),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (ctx) => SocietySetupWizardScreen(state: state)),
-                );
-              },
-            ),
-          // Active User Profile & Fresh User Switcher Pill
-          InkWell(
-            onTap: () => showUserManagementSheet(context, state),
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
+          // Emergency SOS Indicator (if active emergency in society)
+          if (state.activeSosAlerts.isNotEmpty)
+            Container(
               margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.22),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    radius: 11,
-                    backgroundColor: AppTheme.accentTeal,
-                    child: Text(
-                      state.currentUserName.isNotEmpty ? state.currentUserName[0].toUpperCase() : 'U',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 55),
-                    child: Text(
-                      state.currentUserName.split(' ').first,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
-                  ),
-                  const Icon(Icons.arrow_drop_down, color: Colors.white, size: 16),
-                ],
-              ),
-            ),
-          ),
-          // Role Switcher Dropdown in App Bar
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<UserRole>(
-                value: state.currentRole,
-                dropdownColor: AppTheme.primaryNavy,
-                icon: const Icon(Icons.swap_horiz, color: Colors.white, size: 18),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: UserRole.resident,
-                    child: Text('🏠 Resident (Flat Owner)'),
-                  ),
-                  DropdownMenuItem(
-                    value: UserRole.guard,
-                    child: Text('🛡️ Security Guard'),
-                  ),
-                  DropdownMenuItem(
-                    value: UserRole.chairman,
-                    child: Text('🏛️ Chairman / Committee'),
-                  ),
-                  DropdownMenuItem(
-                    value: UserRole.accountant,
-                    child: Text('📊 Accountant (Ledger)'),
-                  ),
-                  DropdownMenuItem(
-                    value: UserRole.admin,
-                    child: Text('🌐 SaaS Super Admin'),
-                  ),
-                ],
-                onChanged: (role) {
-                  if (role != null) {
-                    state.setRole(role);
-                    setState(() {
-                      _currentIndex = 0;
-                    });
-                  }
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                tooltip: 'Emergency SOS Alert Active',
+                icon: const Icon(Icons.emergency_rounded, color: Colors.amberAccent, size: 24),
+                onPressed: () {
+                  // Direct to active SOS alert
                 },
+              ),
+            ),
+
+          // User Profile & Roles Avatar Button
+          Padding(
+            padding: const EdgeInsets.only(right: 14, left: 6),
+            child: InkWell(
+              onTap: () => showUserManagementSheet(context, state),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1.5),
+                ),
+                child: CircleAvatar(
+                  radius: 17,
+                  backgroundColor: AppTheme.accentTeal,
+                  child: Text(
+                    state.currentUserName.isNotEmpty ? state.currentUserName[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -281,15 +212,34 @@ class _HomeScreenState extends State<HomeScreen> {
     if (role == UserRole.chairman) {
       return BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (idx) => setState(() => _currentIndex = idx),
+        onTap: (idx) {
+          if (idx == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (ctx) => SocietySetupWizardScreen(state: widget.state)),
+            );
+          } else if (idx == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (ctx) => DocumentVaultScreen(state: widget.state)),
+            );
+          } else if (idx == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (ctx) => PollingScreen(state: widget.state)),
+            );
+          } else {
+            setState(() => _currentIndex = idx);
+          }
+        },
         selectedItemColor: AppTheme.primaryNavy,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
-          BottomNavigationBarItem(icon: Icon(Icons.approval), label: 'Approvals'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Members'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_suggest_rounded), label: 'Setup Wizard'),
+          BottomNavigationBarItem(icon: Icon(Icons.folder_shared_outlined), label: 'Doc Vault'),
+          BottomNavigationBarItem(icon: Icon(Icons.how_to_vote_outlined), label: 'Polling'),
         ],
       );
     }

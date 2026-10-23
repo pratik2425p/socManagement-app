@@ -84,14 +84,29 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                DropdownButtonFormField<UserRole>(
-                  initialValue: selectedRole,
+                DropdownButtonFormField<String>(
+                  initialValue: occupancy,
                   decoration: InputDecoration(
-                    labelText: 'Role',
+                    labelText: 'Occupancy Type *',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: const [
-                    DropdownMenuItem(value: UserRole.resident, child: Text('Resident (Flat Owner)')),
+                    DropdownMenuItem(value: 'owner', child: Text('🏠 Flat Owner (Permanent Resident)')),
+                    DropdownMenuItem(value: 'tenant', child: Text('🔑 Tenant (Rental Agreement)')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setDialogState(() => occupancy = val);
+                  },
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<UserRole>(
+                  initialValue: selectedRole,
+                  decoration: InputDecoration(
+                    labelText: 'System Access Role',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: UserRole.resident, child: Text('Resident Access')),
                     DropdownMenuItem(value: UserRole.guard, child: Text('Security Guard')),
                     DropdownMenuItem(value: UserRole.accountant, child: Text('Accountant')),
                     DropdownMenuItem(value: UserRole.chairman, child: Text('Committee / Chairman')),
@@ -315,8 +330,16 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
-          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+          ),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
@@ -358,9 +381,36 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        inv.inviteeName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.darkSlate),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              inv.inviteeName,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.darkSlate),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: inv.occupancyType == 'tenant' ? const Color(0xFFFAF5FF) : const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: inv.occupancyType == 'tenant' ? const Color(0xFFD8B4FE) : const Color(0xFFBBF7D0),
+                              ),
+                            ),
+                            child: Text(
+                              inv.occupancyType.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: inv.occupancyType == 'tenant' ? const Color(0xFF7E22CE) : const Color(0xFF15803D),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       Text(
                         '${inv.phone} ${inv.email != null ? "• ${inv.email}" : ""}',
@@ -387,10 +437,14 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
               ],
             ),
             const Divider(height: 18),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text('Code: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
                     SelectableText(
@@ -399,7 +453,7 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.copy, size: 16),
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.only(left: 4),
                       constraints: const BoxConstraints(),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: inv.inviteCode));
@@ -410,25 +464,21 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (ctx) => AcceptInvitationScreen(
-                              state: widget.state,
-                              initialInviteCode: inv.inviteCode,
-                              initialPhone: inv.phone,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.login, size: 16),
-                      label: const Text('Test Join Flow', style: TextStyle(fontSize: 12)),
-                    ),
-                  ],
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => AcceptInvitationScreen(
+                          state: widget.state,
+                          initialInviteCode: inv.inviteCode,
+                          initialPhone: inv.phone,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.login, size: 16),
+                  label: const Text('Test Join Flow', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),

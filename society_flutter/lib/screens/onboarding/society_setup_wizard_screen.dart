@@ -51,9 +51,13 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.state.societyName);
-    _regNoCtrl = TextEditingController(text: 'MH/PUN/RERA/2024/8941');
-    _addressCtrl = TextEditingController(text: 'Near IT Park, Kothrud, Pune - 411038');
-    _contactCtrl = TextEditingController(text: '9822011223');
+    _regNoCtrl = TextEditingController(text: widget.state.currentSociety?.code ?? '');
+    _addressCtrl = TextEditingController(
+      text: widget.state.currentSociety != null
+          ? '${widget.state.currentSociety!.address}, ${widget.state.currentSociety!.city} - ${widget.state.currentSociety!.pincode}'
+          : '',
+    );
+    _contactCtrl = TextEditingController(text: widget.state.activeUser?.phone ?? '');
     _validateCsvContent();
   }
 
@@ -133,18 +137,59 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
     });
   }
 
+  static const List<String> _stepTitles = [
+    'Profile',
+    'Flats',
+    'Staff',
+    'Owners',
+    'Finance',
+    'Go-Live',
+  ];
+
+  void _handleContinue() {
+    if (_currentStep < 5) {
+      setState(() => _currentStep += 1);
+    } else {
+      // Finish Go Live
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🎉 Society setup verified and activated! Member invitations ready.'),
+          backgroundColor: AppTheme.successGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (ctx) => MemberInvitationsScreen(state: widget.state)),
+      );
+    }
+  }
+
+  Widget _buildActiveStepContent() {
+    switch (_currentStep) {
+      case 0:
+        return _buildStep1Profile();
+      case 1:
+        return _buildStep2Flats();
+      case 2:
+        return _buildStep3Staff();
+      case 3:
+        return _buildStep4OwnerImport();
+      case 4:
+        return _buildStep5Finance();
+      case 5:
+        return _buildStep6Review();
+      default:
+        return _buildStep1Profile();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Society Onboarding Setup Wizard', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text('6-Step Rapid Implementation Engine', style: TextStyle(fontSize: 11, color: Colors.white70)),
-          ],
-        ),
+        title: const Text('Onboarding Setup Wizard', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             tooltip: 'View Invitations',
@@ -158,71 +203,179 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
           ),
         ],
       ),
-      body: Stepper(
-        type: StepperType.horizontal,
-        currentStep: _currentStep,
-        onStepTapped: (step) => setState(() => _currentStep = step),
-        onStepContinue: () {
-          if (_currentStep < 5) {
-            setState(() => _currentStep += 1);
-          } else {
-            // Finish Go Live
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🎉 Society setup verified and activated! Member invitations ready.'),
-                backgroundColor: AppTheme.successGreen,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (ctx) => MemberInvitationsScreen(state: widget.state)),
-            );
-          }
-        },
-        onStepCancel: () {
-          if (_currentStep > 0) {
-            setState(() => _currentStep -= 1);
-          }
-        },
-        steps: [
-          Step(
-            title: const Text('Profile'),
-            isActive: _currentStep >= 0,
-            state: _currentStep > 0 ? StepState.complete : StepState.indexed,
-            content: _buildStep1Profile(),
+      body: Column(
+        children: [
+          // Sleek Step Progress Header (Zero Overflow)
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'STEP ${_currentStep + 1} OF 6: ${_stepTitles[_currentStep].toUpperCase()}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                        color: AppTheme.primaryNavy,
+                      ),
+                    ),
+                    Text(
+                      '${((_currentStep + 1) / 6 * 100).toInt()}% Completed',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentTeal,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (_currentStep + 1) / 6,
+                    minHeight: 5,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentTeal),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(6, (index) {
+                      final isSelected = _currentStep == index;
+                      final isDone = _currentStep > index;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: InkWell(
+                          onTap: () => setState(() => _currentStep = index),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppTheme.primaryNavy
+                                  : (isDone ? const Color(0xFFEFF6FF) : Colors.grey.shade100),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppTheme.primaryNavy
+                                    : (isDone ? const Color(0xFFBFDBFE) : Colors.grey.shade300),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isDone)
+                                  const Icon(Icons.check, size: 12, color: AppTheme.accentTeal)
+                                else
+                                  Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isSelected ? Colors.white : Colors.grey.shade400,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected ? AppTheme.primaryNavy : Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  _stepTitles[index],
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : (isDone ? const Color(0xFF1E40AF) : Colors.grey.shade700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
           ),
-          Step(
-            title: const Text('Flats'),
-            isActive: _currentStep >= 1,
-            state: _currentStep > 1 ? StepState.complete : StepState.indexed,
-            content: _buildStep2Flats(),
-          ),
-          Step(
-            title: const Text('Staff'),
-            isActive: _currentStep >= 2,
-            state: _currentStep > 2 ? StepState.complete : StepState.indexed,
-            content: _buildStep3Staff(),
-          ),
-          Step(
-            title: const Text('Owners'),
-            isActive: _currentStep >= 3,
-            state: _currentStep > 3 ? StepState.complete : StepState.indexed,
-            content: _buildStep4OwnerImport(),
-          ),
-          Step(
-            title: const Text('Finance'),
-            isActive: _currentStep >= 4,
-            state: _currentStep > 4 ? StepState.complete : StepState.indexed,
-            content: _buildStep5Finance(),
-          ),
-          Step(
-            title: const Text('Go-Live'),
-            isActive: _currentStep >= 5,
-            state: _currentStep > 5 ? StepState.complete : StepState.indexed,
-            content: _buildStep6Review(),
+          const Divider(height: 1),
+
+          // Active Step Content in SingleChildScrollView
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: _buildActiveStepContent(),
+            ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.grey.shade200)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              offset: const Offset(0, -3),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              if (_currentStep > 0) ...[
+                OutlinedButton.icon(
+                  onPressed: () => setState(() => _currentStep -= 1),
+                  icon: const Icon(Icons.arrow_back, size: 16),
+                  label: const Text('Back'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _handleContinue,
+                  icon: Icon(
+                    _currentStep == 5 ? Icons.rocket_launch : Icons.arrow_forward,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    _currentStep == 5 ? 'Launch & Go-Live Society' : 'Continue to ${_stepTitles[_currentStep + 1]}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _currentStep == 5 ? AppTheme.successGreen : AppTheme.primaryNavy,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -294,37 +447,36 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
             children: [
               const Text('⚡ Rapid Wing & Flats Generator', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.primaryNavy)),
               const SizedBox(height: 10),
+              TextFormField(
+                controller: _wingNameCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Wing / Building Name',
+                  hintText: 'e.g. Wing A',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _wingNameCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Wing Name',
-                        hintText: 'e.g. Wing A',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
                       controller: _floorsCtrl,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Floors',
+                        labelText: 'Total Floors',
+                        hintText: 'e.g. 5',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _unitsPerFloorCtrl,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Flats/Flr',
+                        labelText: 'Flats Per Floor',
+                        hintText: 'e.g. 4',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
@@ -808,7 +960,16 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.darkSlate)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.darkSlate),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Brand Colors
@@ -19,6 +20,8 @@ class AppTheme {
     useMaterial3: true,
     scaffoldBackgroundColor: lightBackground,
     primaryColor: primaryNavy,
+    textTheme: GoogleFonts.poppinsTextTheme(),
+    fontFamily: GoogleFonts.poppins().fontFamily,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryNavy,
       primary: primaryNavy,
@@ -26,13 +29,13 @@ class AppTheme {
       surface: surfaceCard,
       brightness: Brightness.light,
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: primaryNavy,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(
-        fontSize: 18,
+      titleTextStyle: GoogleFonts.poppins(
+        fontSize: 17,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
@@ -54,7 +57,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

@@ -98,7 +98,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
                                   backgroundColor: AppTheme.dangerRed,
                                 ),
                                 onPressed: () {
-                                  state.acknowledgeSos(sos.id!, 'Guard Santosh Gawde');
+                                  state.acknowledgeSos(sos.id!, state.currentUserName);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Guard Dispatched to Flat! Alert acknowledged.')),
                                   );
@@ -114,7 +114,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
                                   backgroundColor: AppTheme.successGreen,
                                 ),
                                 onPressed: () {
-                                  state.resolveSos(sos.id!, 'Guard Santosh', 'Situation safe and attended.');
+                                  state.resolveSos(sos.id!, state.currentUserName, 'Situation safe and attended.');
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Emergency Cleared & Resolved.')),
                                   );
@@ -157,8 +157,10 @@ class _GuardDashboardState extends State<GuardDashboard> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Duty Guard: Santosh Gawde • Campus Gate',
+                        'Duty Guard: ${state.currentUserName} • Main Campus Gate',
                         style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -362,7 +364,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
         onTap: () => setState(() => _selectedTab = index),
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
           decoration: BoxDecoration(
             color: isSelected ? AppTheme.primaryNavy : Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -372,12 +374,15 @@ class _GuardDashboardState extends State<GuardDashboard> {
           ),
           child: Column(
             children: [
-              Text(
-                count.toString(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : color,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  count.toString(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : color,
+                  ),
                 ),
               ),
               const SizedBox(height: 2),
@@ -390,6 +395,7 @@ class _GuardDashboardState extends State<GuardDashboard> {
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -438,21 +444,36 @@ class _GuardDashboardState extends State<GuardDashboard> {
               ],
             ),
             const SizedBox(height: 6),
-            Row(
+            Wrap(
+              spacing: 10,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Icon(Icons.phone, size: 14, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(v.phoneNumber, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-                const SizedBox(width: 12),
-                Icon(Icons.category, size: 14, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(v.purpose, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-                if (v.vehicleNumber != null) ...[
-                  const SizedBox(width: 12),
-                  Icon(Icons.two_wheeler, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text(v.vehicleNumber!, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-                ],
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.phone, size: 14, color: Colors.grey.shade600),
+                    const SizedBox(width: 4),
+                    Text(v.phoneNumber, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.category, size: 14, color: Colors.grey.shade600),
+                    const SizedBox(width: 4),
+                    Text(v.purpose, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                  ],
+                ),
+                if (v.vehicleNumber != null && v.vehicleNumber!.isNotEmpty)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.two_wheeler, size: 14, color: Colors.grey.shade600),
+                      const SizedBox(width: 4),
+                      Text(v.vehicleNumber!, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+                    ],
+                  ),
               ],
             ),
             if (isInside) ...[
