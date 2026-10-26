@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
+import 'app_motion.dart';
 import 'app_radii.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
@@ -133,6 +134,15 @@ class AppThemeData {
         thickness: 1,
         space: 1,
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.iOS: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.macOS: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.windows: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.linux: SubtleFadeSlidePageTransitionBuilder(),
+        },
+      ),
     );
   }
 
@@ -258,6 +268,15 @@ class AppThemeData {
         color: AppColors.borderDark,
         thickness: 1,
         space: 1,
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.iOS: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.macOS: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.windows: SubtleFadeSlidePageTransitionBuilder(),
+          TargetPlatform.linux: SubtleFadeSlidePageTransitionBuilder(),
+        },
       ),
     );
   }
