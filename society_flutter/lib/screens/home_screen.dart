@@ -15,7 +15,7 @@ import 'polling/polling_screen.dart';
 import 'profile/user_management_sheet.dart';
 import 'saas/super_admin_portal_screen.dart';
 
-/// Central Shell Scaffold with Role-Aware Bottom Navigation & Top Bar
+/// Central Shell Scaffold with Adaptive Navigation (NavigationRail on Web/Desktop, BottomNav on Mobile)
 class HomeScreen extends StatefulWidget {
   final SocietyState state;
   const HomeScreen({super.key, required this.state});
@@ -170,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final state = widget.state;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isWide = context.isWide;
     final navItems = _getNavItemsForRole(state.currentRole);
 
     final safeIndex = _currentIndex < navItems.length ? _currentIndex : 0;
@@ -249,12 +250,54 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _buildBodyForRole(state.currentRole),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: safeIndex,
-        onTap: (idx) => setState(() => _currentIndex = idx),
-        items: navItems,
-      ),
+      body: isWide
+          ? Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: safeIndex,
+                  onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
+                  labelType: NavigationRailLabelType.all,
+                  backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+                  selectedIconTheme: const IconThemeData(color: AppColors.accentTeal),
+                  selectedLabelTextStyle: const TextStyle(
+                    color: AppColors.accentTeal,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  unselectedLabelTextStyle: TextStyle(
+                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    fontSize: 11,
+                  ),
+                  destinations: navItems
+                      .map(
+                        (item) => NavigationRailDestination(
+                          icon: item.icon,
+                          selectedIcon: item.activeIcon,
+                          label: Text(item.label ?? ''),
+                        ),
+                      )
+                      .toList(),
+                ),
+                VerticalDivider(
+                  thickness: 1,
+                  width: 1,
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                ),
+                Expanded(
+                  child: ResponsiveContainer(
+                    child: _buildBodyForRole(state.currentRole),
+                  ),
+                ),
+              ],
+            )
+          : _buildBodyForRole(state.currentRole),
+      bottomNavigationBar: isWide
+          ? null
+          : BottomNavigationBar(
+              currentIndex: safeIndex,
+              onTap: (idx) => setState(() => _currentIndex = idx),
+              items: navItems,
+            ),
     );
   }
 }

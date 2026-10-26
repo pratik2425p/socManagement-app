@@ -82,9 +82,10 @@ class _AmenityBookingScreenState extends State<AmenityBookingScreen> {
       ),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: ResponsiveContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Available Facilities Carousel
             const AppSectionHeader(
               title: 'Select Facility',
@@ -305,6 +306,7 @@ class _AmenityBookingScreenState extends State<AmenityBookingScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

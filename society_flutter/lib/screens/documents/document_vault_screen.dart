@@ -139,9 +139,10 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
+      body: ResponsiveContainer(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
           // Tab 1: Official Documents
           Column(
             children: [
@@ -284,6 +285,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
                 ),
         ],
       ),
+    ),
       floatingActionButton: isCommittee
           ? FloatingActionButton.extended(
               backgroundColor: AppColors.accentTeal,

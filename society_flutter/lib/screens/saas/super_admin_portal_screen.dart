@@ -65,13 +65,15 @@ class _SuperAdminPortalScreenState extends State<SuperAdminPortalScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildSocietiesTab(state),
-          _buildSubscriptionsTab(state),
-          _buildPolicyTab(isDark),
-        ],
+      body: ResponsiveContainer(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildSocietiesTab(state),
+            _buildSubscriptionsTab(state),
+            _buildPolicyTab(isDark),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => OnboardSocietySheet.show(context, state),

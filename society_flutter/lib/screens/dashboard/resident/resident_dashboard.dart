@@ -27,9 +27,10 @@ class ResidentDashboard extends StatelessWidget {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: AppSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: ResponsiveContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // 1. Greeting & Flat Banner
             ResidentGreetingCard(state: state),
             AppSpacing.vGapMd,
@@ -237,6 +238,7 @@ class ResidentDashboard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

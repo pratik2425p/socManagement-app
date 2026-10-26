@@ -20,9 +20,10 @@ class SaasAdminDashboard extends StatelessWidget {
       child: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: ResponsiveContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Platform Header Banner
             Container(
               padding: AppSpacing.insetAllMd,
@@ -197,7 +198,8 @@ class SaasAdminDashboard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildTierBox({

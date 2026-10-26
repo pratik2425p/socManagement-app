@@ -198,8 +198,9 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
         title: 'Society Setup Wizard',
         subtitle: 'Step ${_currentStep + 1} of 6: ${_stepTitles[_currentStep]}',
       ),
-      body: Column(
-        children: [
+      body: ResponsiveContainer(
+        child: Column(
+          children: [
           // Step Progress Bar
           Container(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
@@ -264,6 +265,7 @@ class _SocietySetupWizardScreenState extends State<SocietySetupWizardScreen> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }

@@ -156,9 +156,10 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
       ),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: ResponsiveContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             // KPI Stat Cards
             Row(
               children: [
@@ -321,6 +322,7 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

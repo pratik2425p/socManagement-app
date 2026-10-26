@@ -38,103 +38,107 @@ class _GuardDashboardState extends State<GuardDashboard> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: AppSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Emergency Siren Alert Banner (if active)
-            GuardSosBanner(state: state),
+        child: ResponsiveContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Emergency Siren Alert Banner (if active)
+              GuardSosBanner(state: state),
 
-            // 2. Gate Status Card
-            Container(
-              padding: AppSpacing.insetAllMd,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.surfaceElevatedDark : AppColors.primaryNavy,
-                borderRadius: AppRadii.borderLg,
+              // 2. Gate Status Card
+              Container(
+                padding: AppSpacing.insetAllMd,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceElevatedDark : AppColors.primaryNavy,
+                  borderRadius: AppRadii.borderLg,
+                ),
+                child: Row(
+                  children: [
+                    const AppAvatar(
+                      name: 'G1',
+                      radius: 20,
+                      backgroundColor: Colors.white24,
+                      foregroundColor: Colors.white,
+                    ),
+                    AppSpacing.hGapMd,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Main Security Gate 1',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          Text(
+                            'Duty Guard: ${state.currentUserName}',
+                            style: const TextStyle(color: Colors.white70, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.success,
+                        borderRadius: AppRadii.borderSm,
+                      ),
+                      child: const Text(
+                        'GATE ACTIVE',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
+              AppSpacing.vGapLg,
+
+              // 3. Instant 4-Digit Passcode Verifier & Live Occupancy (Side-by-side on desktop)
+              ResponsiveRow(
+                breakpoint: 760,
                 children: [
-                  const AppAvatar(
-                    name: 'G1',
-                    radius: 20,
-                    backgroundColor: Colors.white24,
-                    foregroundColor: Colors.white,
-                  ),
-                  AppSpacing.hGapMd,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Main Security Gate 1',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                        ),
-                        Text(
-                          'Duty Guard: ${state.currentUserName}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      borderRadius: AppRadii.borderSm,
-                    ),
-                    child: const Text(
-                      'GATE ACTIVE',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
+                  GuardPasscodeVerifier(state: state),
+                  GuardOccupancyStats(
+                    state: state,
+                    onNewVisitor: () => showGuardNewVisitorModal(context, state),
                   ),
                 ],
               ),
-            ),
-            AppSpacing.vGapLg,
+              AppSpacing.vGapXl,
 
-            // 3. Instant 4-Digit Passcode Verifier Card
-            GuardPasscodeVerifier(state: state),
-            AppSpacing.vGapLg,
-
-            // 4. Live Occupancy & Quick Action
-            GuardOccupancyStats(
-              state: state,
-              onNewVisitor: () => showGuardNewVisitorModal(context, state),
-            ),
-            AppSpacing.vGapXl,
-
-            // 5. Visitor Filter Tabs
-            AppSectionHeader(
-              title: 'Visitor Log (${filteredVisitors.length})',
-              padding: EdgeInsets.zero,
-            ),
-            AppSpacing.vGapSm,
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildTab(0, 'All (${allVisitors.length})'),
-                  AppSpacing.hGapXs,
-                  _buildTab(1, 'Inside (${allVisitors.where((v) => v.status == VisitorStatus.inside).length})'),
-                  AppSpacing.hGapXs,
-                  _buildTab(2, 'Waiting (${allVisitors.where((v) => v.status == VisitorStatus.waitingApproval).length})'),
-                  AppSpacing.hGapXs,
-                  _buildTab(3, 'Exited (${allVisitors.where((v) => v.status == VisitorStatus.exited).length})'),
-                ],
+              // 5. Visitor Filter Tabs
+              AppSectionHeader(
+                title: 'Visitor Log (${filteredVisitors.length})',
+                padding: EdgeInsets.zero,
               ),
-            ),
-            AppSpacing.vGapMd,
+              AppSpacing.vGapSm,
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTab(0, 'All (${allVisitors.length})'),
+                    AppSpacing.hGapXs,
+                    _buildTab(1, 'Inside (${allVisitors.where((v) => v.status == VisitorStatus.inside).length})'),
+                    AppSpacing.hGapXs,
+                    _buildTab(2, 'Waiting (${allVisitors.where((v) => v.status == VisitorStatus.waitingApproval).length})'),
+                    AppSpacing.hGapXs,
+                    _buildTab(3, 'Exited (${allVisitors.where((v) => v.status == VisitorStatus.exited).length})'),
+                  ],
+                ),
+              ),
+              AppSpacing.vGapMd,
 
-            // 6. Visitor List
-            if (filteredVisitors.isEmpty)
-              const AppEmptyState(
-                icon: Icons.shield_outlined,
-                title: 'No Visitors in Category',
-                message: 'No entries currently match this filter.',
-              )
-            else
-              ...filteredVisitors.map((v) => GuardVisitorCard(entry: v, state: state)),
-            AppSpacing.vGapXl,
-          ],
+              // 6. Visitor List
+              if (filteredVisitors.isEmpty)
+                const AppEmptyState(
+                  icon: Icons.shield_outlined,
+                  title: 'No Visitors in Category',
+                  message: 'No entries currently match this filter.',
+                )
+              else
+                ...filteredVisitors.map((v) => GuardVisitorCard(entry: v, state: state)),
+              AppSpacing.vGapXl,
+            ],
+          ),
         ),
       ),
     );

@@ -38,8 +38,9 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
         title: 'Society Compliance Audit Trail',
         subtitle: 'Statutory log of financial, security & governance actions',
       ),
-      body: Column(
-        children: [
+      body: ResponsiveContainer(
+        child: Column(
+          children: [
           // Compliance Banner
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -111,6 +112,7 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

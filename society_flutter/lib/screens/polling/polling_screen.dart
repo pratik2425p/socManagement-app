@@ -24,9 +24,10 @@ class PollingScreen extends StatelessWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: AppSpacing.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: ResponsiveContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Democratic Principle Banner
               Container(
                 padding: AppSpacing.insetAllMd,
@@ -213,6 +214,7 @@ class PollingScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
       floatingActionButton: isCommittee
           ? FloatingActionButton.extended(
               backgroundColor: AppColors.primaryNavy,

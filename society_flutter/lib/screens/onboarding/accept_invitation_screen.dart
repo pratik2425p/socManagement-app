@@ -79,11 +79,13 @@ class _AcceptInvitationScreenState extends State<AcceptInvitationScreen> {
       ),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        child: ResponsiveContainer(
+          maxWidth: 680,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               // Hero Info Card
               AppCard(
                 color: AppColors.primaryContainer,
@@ -180,6 +182,7 @@ class _AcceptInvitationScreenState extends State<AcceptInvitationScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

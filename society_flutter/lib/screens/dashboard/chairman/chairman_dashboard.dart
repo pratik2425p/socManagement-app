@@ -11,7 +11,7 @@ import 'modals/request_voucher_modal.dart';
 import 'widgets/chairman_kpi_grid.dart';
 import 'widgets/chairman_voucher_queue.dart';
 
-/// Redesigned Chairman / Society Governance Dashboard (<240 lines)
+/// Redesigned Chairman / Society Governance Dashboard with Responsive Web & Mobile Layout
 class ChairmanDashboard extends StatelessWidget {
   final SocietyState state;
   const ChairmanDashboard({super.key, required this.state});
@@ -26,7 +26,7 @@ class ChairmanDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Executive Society KPI Grid
+            // 1. Executive Society KPI Grid (Responsive 4-column desktop, 2-column mobile)
             const AppSectionHeader(
               title: 'Society Executive Overview',
               subtitle: 'Real-time metrics from Serverpod & PostgreSQL',
@@ -70,60 +70,78 @@ class ChairmanDashboard extends StatelessWidget {
             // 4. Governance Modules Navigation
             const AppSectionHeader(title: 'Administrative Tools'),
             AppSpacing.vGapSm,
-            _buildAdminNavTile(
-              context,
-              title: '6-Step Society Onboarding Wizard',
-              subtitle: 'Wings, bulk flat generator, member CSV import',
-              icon: Icons.settings_suggest_rounded,
-              color: AppColors.primaryNavy,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => SocietySetupWizardScreen(state: state)),
-              ),
-            ),
-            _buildAdminNavTile(
-              context,
-              title: 'Member Invitations Engine',
-              subtitle: 'Generate invite codes and track resident onboarding',
-              icon: Icons.mail_outline_rounded,
-              color: AppColors.accentTeal,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => MemberInvitationsScreen(state: state)),
-              ),
-            ),
-            _buildAdminNavTile(
-              context,
-              title: 'Official Document Vault & MOM',
-              subtitle: 'Society bye-laws, audits, AGM minutes, confidential files',
-              icon: Icons.folder_shared_rounded,
-              color: const Color(0xFF059669),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => DocumentVaultScreen(state: state)),
-              ),
-            ),
-            _buildAdminNavTile(
-              context,
-              title: 'Democratic Polling & Resolutions',
-              subtitle: 'Create digital resolutions (1 Flat = 1 Vote)',
-              icon: Icons.how_to_vote_rounded,
-              color: AppColors.info,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => PollingScreen(state: state)),
-              ),
-            ),
-            _buildAdminNavTile(
-              context,
-              title: 'Immutable Compliance Audit Trail',
-              subtitle: 'Complete chronological log of financial & security actions',
-              icon: Icons.security_rounded,
-              color: const Color(0xFF7C3AED),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => AuditTrailScreen(state: state)),
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 700;
+                final tiles = [
+                  _buildAdminNavTile(
+                    context,
+                    title: '6-Step Society Onboarding Wizard',
+                    subtitle: 'Wings, bulk flat generator, member CSV import',
+                    icon: Icons.settings_suggest_rounded,
+                    color: AppColors.primaryNavy,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (ctx) => SocietySetupWizardScreen(state: state)),
+                    ),
+                  ),
+                  _buildAdminNavTile(
+                    context,
+                    title: 'Member Invitations Engine',
+                    subtitle: 'Generate invite codes and track resident onboarding',
+                    icon: Icons.mail_outline_rounded,
+                    color: AppColors.accentTeal,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (ctx) => MemberInvitationsScreen(state: state)),
+                    ),
+                  ),
+                  _buildAdminNavTile(
+                    context,
+                    title: 'Official Document Vault & MOM',
+                    subtitle: 'Society bye-laws, audits, AGM minutes, confidential files',
+                    icon: Icons.folder_shared_rounded,
+                    color: const Color(0xFF059669),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (ctx) => DocumentVaultScreen(state: state)),
+                    ),
+                  ),
+                  _buildAdminNavTile(
+                    context,
+                    title: 'Democratic Polling & Resolutions',
+                    subtitle: 'Create digital resolutions (1 Flat = 1 Vote)',
+                    icon: Icons.how_to_vote_rounded,
+                    color: AppColors.info,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (ctx) => PollingScreen(state: state)),
+                    ),
+                  ),
+                  _buildAdminNavTile(
+                    context,
+                    title: 'Immutable Compliance Audit Trail',
+                    subtitle: 'Chronological log of financial & security events',
+                    icon: Icons.security_rounded,
+                    color: const Color(0xFF7C3AED),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (ctx) => AuditTrailScreen(state: state)),
+                    ),
+                  ),
+                ];
+
+                if (!isWide) {
+                  return Column(children: tiles);
+                }
+
+                final itemWidth = (constraints.maxWidth - AppSpacing.sm) / 2;
+                return Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: tiles.map((t) => SizedBox(width: itemWidth, child: t)).toList(),
+                );
+              },
             ),
             AppSpacing.vGapXxl,
           ],
