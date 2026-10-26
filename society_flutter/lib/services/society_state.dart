@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:society_client/society_client.dart';
 import '../core/config/app_config.dart';
+import '../core/services/qr_pass_service.dart';
 import 'data/demo_data_source.dart';
 import 'data/server_data_source.dart';
 import 'data/society_data_source.dart';
@@ -1112,6 +1113,24 @@ class SocietyState extends ChangeNotifier {
       debugPrint('Error verifying passcode: $e');
     }
     return false;
+  }
+
+  /// Verifies a dynamic time-limited resident QR gate pass
+  Future<PassValidationResult> verifyQrPass(String rawToken) async {
+    final result = QrPassService.validateToken(
+      rawToken: rawToken,
+      currentSocietyId: currentSocietyId,
+    );
+    if (result.isValid) {
+      recordAuditEvent(
+        category: 'Gate & Security',
+        action: 'QR_PASS_VERIFIED',
+        target: 'Flat ${result.flatNumber}',
+        description: 'Guard scanned valid dynamic QR pass for Flat ${result.flatNumber}. Boom barrier opened.',
+      );
+      notifyListeners();
+    }
+    return result;
   }
 
   Future<void> updateVisitorStatus(int id, VisitorStatus status) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../../../core/core.dart';
 import '../../../../services/society_state.dart';
+import 'guard_pass_scanner_screen.dart';
 import 'modals/guard_new_visitor_modal.dart';
 import 'widgets/guard_occupancy_stats.dart';
 import 'widgets/guard_passcode_verifier.dart';
@@ -76,8 +77,30 @@ class _GuardDashboardState extends State<GuardDashboard> {
                         ],
                       ),
                     ),
+                    PressScale(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => GuardPassScannerScreen(state: state)),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentTeal,
+                          borderRadius: AppRadii.borderSm,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.qr_code_scanner_rounded, size: 16, color: Color(0xFF0F172A)),
+                            SizedBox(width: 4),
+                            Text('Scan QR Pass', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    AppSpacing.hGapSm,
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.success,
                         borderRadius: AppRadii.borderSm,

@@ -37,6 +37,8 @@ export 'widgets/pulse_dot.dart';
 export 'widgets/progress_ring.dart';
 export 'widgets/shake_widget.dart';
 export 'widgets/sparkline_chart.dart';
+export 'widgets/qr_code_widget.dart';
+export 'services/qr_pass_service.dart';
 export 'utils/app_formatters.dart';
 export 'config/app_config.dart';
 export 'utils/pdf_receipt_generator.dart';

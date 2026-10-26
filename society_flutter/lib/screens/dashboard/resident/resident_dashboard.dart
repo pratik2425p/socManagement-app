@@ -8,6 +8,7 @@ import 'modals/emergency_sos_modal.dart';
 import 'modals/pre_approve_visitor_modal.dart';
 import 'modals/raise_complaint_modal.dart';
 import 'widgets/resident_dues_card.dart';
+import 'widgets/resident_gate_pass_card.dart';
 import 'widgets/resident_greeting_card.dart';
 import 'widgets/resident_pending_approvals.dart';
 import 'widgets/resident_quick_actions.dart';
@@ -106,6 +107,10 @@ class ResidentDashboard extends StatelessWidget {
             // 4. Maintenance Dues Hero Card
             AppSpacing.vGapLg,
             ResidentDuesCard(state: state),
+            AppSpacing.vGapMd,
+
+            // 4b. Dynamic Gate Pass (QR)
+            ResidentGatePassCard(state: state),
             AppSpacing.vGapXl,
 
             // 5. Quick Actions 2x3 Grid
