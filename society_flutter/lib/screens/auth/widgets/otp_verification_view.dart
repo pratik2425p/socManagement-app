@@ -149,16 +149,19 @@ class OtpVerificationView extends StatelessWidget {
                   children: [
                     if (!isLockedOut) ...[
                       Center(
-                        child: Pinput(
-                          length: 6,
-                          controller: pinController,
-                          focusNode: focusNode,
-                          autofocus: true,
-                          defaultPinTheme: defaultPinTheme,
-                          focusedPinTheme: focusedPinTheme,
-                          errorPinTheme: errorPinTheme,
-                          forceErrorState: errorMessage != null,
-                          onCompleted: onVerify,
+                        child: ShakeWidget(
+                          shake: errorMessage != null,
+                          child: Pinput(
+                            length: 6,
+                            controller: pinController,
+                            focusNode: focusNode,
+                            autofocus: true,
+                            defaultPinTheme: defaultPinTheme,
+                            focusedPinTheme: focusedPinTheme,
+                            errorPinTheme: errorPinTheme,
+                            forceErrorState: errorMessage != null,
+                            onCompleted: onVerify,
+                          ),
                         ),
                       ),
                       AppSpacing.vGapMd,

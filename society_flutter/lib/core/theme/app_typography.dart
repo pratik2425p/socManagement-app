@@ -88,4 +88,36 @@ class AppTypography {
       ),
     );
   }
+
+  // --- Large Numeral KPI Typography for SaaS Dashboards ---
+  static TextStyle kpiHero(Color color) => GoogleFonts.poppins(
+        fontSize: 34,
+        fontWeight: FontWeight.w800,
+        color: color,
+        letterSpacing: -1.0,
+        height: 1.1,
+      );
+
+  static TextStyle kpiLarge(Color color) => GoogleFonts.poppins(
+        fontSize: 26,
+        fontWeight: FontWeight.w700,
+        color: color,
+        letterSpacing: -0.5,
+        height: 1.15,
+      );
+
+  static TextStyle kpiMedium(Color color) => GoogleFonts.poppins(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: color,
+        letterSpacing: -0.25,
+        height: 1.2,
+      );
+
+  static TextStyle kpiSmall(Color color) => GoogleFonts.poppins(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: color,
+        letterSpacing: -0.1,
+      );
 }

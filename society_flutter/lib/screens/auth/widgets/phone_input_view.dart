@@ -35,41 +35,47 @@ class PhoneInputView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. App Identity Header
-              Center(
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceElevatedDark : AppColors.primaryContainer,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.accentTeal.withValues(alpha: 0.3),
-                      width: 2,
+              FadeSlideIn(
+                child: Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.surfaceElevatedDark : AppColors.primaryContainer,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.accentTeal.withValues(alpha: 0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.apartment_rounded,
+                          size: 32,
+                          color: AppColors.accentTeal,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.apartment_rounded,
-                    size: 32,
-                    color: AppColors.accentTeal,
-                  ),
+                    AppSpacing.vGapMd,
+                    Text(
+                      'Welcome to Society Connect',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    AppSpacing.vGapXs,
+                    Text(
+                      'Enter your 10-digit mobile number to sign in with a secure one-time passcode.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-              ),
-              AppSpacing.vGapMd,
-              Text(
-                'Welcome to Society Connect',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              AppSpacing.vGapXs,
-              Text(
-                'Enter your 10-digit mobile number to sign in with a secure one-time passcode.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                ),
-                textAlign: TextAlign.center,
               ),
               AppSpacing.vGapXl,
 

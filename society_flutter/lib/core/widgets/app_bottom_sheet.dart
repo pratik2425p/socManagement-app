@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_motion.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_spacing.dart';
 
@@ -37,6 +38,11 @@ class AppBottomSheet extends StatelessWidget {
       context: context,
       isScrollControlled: isScrollControlled,
       backgroundColor: Colors.transparent,
+      sheetAnimationStyle: AnimationStyle(
+        curve: AppMotion.decelerate,
+        duration: AppMotion.slow,
+        reverseCurve: Curves.easeInCubic,
+      ),
       builder: (ctx) => AppBottomSheet(
         title: title,
         subtitle: subtitle,

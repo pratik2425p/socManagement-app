@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_motion.dart';
 
@@ -46,7 +47,7 @@ class _FadeSlideInState extends State<FadeSlideIn> with SingleTickerProviderStat
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
-  bool _disposed = false;
+  Timer? _delayTimer;
 
   @override
   void initState() {
@@ -76,17 +77,15 @@ class _FadeSlideInState extends State<FadeSlideIn> with SingleTickerProviderStat
     if (widget.delay == null || widget.delay == Duration.zero) {
       if (mounted) _controller.forward();
     } else {
-      Future.delayed(widget.delay!, () {
-        if (mounted && !_disposed) {
-          _controller.forward();
-        }
+      _delayTimer = Timer(widget.delay!, () {
+        if (mounted) _controller.forward();
       });
     }
   }
 
   @override
   void dispose() {
-    _disposed = true;
+    _delayTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
