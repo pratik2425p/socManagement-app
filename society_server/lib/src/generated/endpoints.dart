@@ -960,6 +960,25 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['phone'],
                   ),
         ),
+        'loginWithPhone': _i1.MethodConnector(
+          name: 'loginWithPhone',
+          params: {
+            'phone': _i1.ParameterDescription(
+              name: 'phone',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['society'] as _i6.SocietyEndpoint).loginWithPhone(
+                    session,
+                    params['phone'],
+                  ),
+        ),
       },
     );
     connectors['document'] = _i1.EndpointConnector(

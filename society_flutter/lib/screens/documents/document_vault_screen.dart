@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
+import '../../core/core.dart';
 import '../../services/society_state.dart';
-import '../../theme/app_theme.dart';
 
+/// Redesigned Society Document Vault & Meeting Minutes (MOM)
 class DocumentVaultScreen extends StatefulWidget {
   final SocietyState state;
   const DocumentVaultScreen({super.key, required this.state});
@@ -12,7 +13,7 @@ class DocumentVaultScreen extends StatefulWidget {
 }
 
 class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late final TabController _tabController;
   DocumentCategory? _selectedCategory;
 
   @override
@@ -27,9 +28,91 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
     super.dispose();
   }
 
+  void _showUploadDialog(BuildContext context) {
+    final titleCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    DocumentCategory category = DocumentCategory.byeLaws;
+    bool isConfidential = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Upload Official Society Document'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppTextField(
+                  controller: titleCtrl,
+                  label: 'Document Title *',
+                  hint: 'e.g. FY 2025-26 Statutory Audit Report',
+                ),
+                AppSpacing.vGapMd,
+                AppTextField(
+                  controller: descCtrl,
+                  label: 'Summary / Description *',
+                  hint: 'e.g. Conducted by M/s R.K. Joshi & Associates, CA',
+                  maxLines: 2,
+                ),
+                AppSpacing.vGapMd,
+                const Text('Document Category *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                AppSpacing.vGapXs,
+                DropdownButtonFormField<DocumentCategory>(
+                  initialValue: category,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: AppRadii.borderMd),
+                  ),
+                  items: DocumentCategory.values.map((c) {
+                    return DropdownMenuItem(value: c, child: Text(c.name));
+                  }).toList(),
+                  onChanged: (v) {
+                    if (v != null) setDialogState(() => category = v);
+                  },
+                ),
+                AppSpacing.vGapSm,
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: isConfidential,
+                  title: const Text('Confidential (Committee Only)', style: TextStyle(fontSize: 13)),
+                  activeColor: AppColors.accentTeal,
+                  onChanged: (v) => setDialogState(() => isConfidential = v ?? false),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (titleCtrl.text.trim().isEmpty) return;
+                widget.state.uploadDocument(
+                  title: titleCtrl.text.trim(),
+                  description: descCtrl.text.trim(),
+                  category: category,
+                  fileSize: '2.4 MB',
+                  isCommitteeOnly: isConfidential,
+                );
+                Navigator.pop(ctx);
+                AppSnackbar.showSuccess(context, 'Document uploaded to Vault successfully!');
+              },
+              child: const Text('Upload to Vault'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isCommittee = state.currentRole == UserRole.chairman ||
         state.currentRole == UserRole.committee ||
         state.currentRole == UserRole.accountant;
@@ -40,14 +123,16 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
       return true;
     }).toList();
 
+    final minutes = state.meetingMinutes;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Society Document Vault & AGM Records'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.accentTeal,
+          indicatorColor: AppColors.accentTeal,
           labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
+          unselectedLabelColor: Colors.white70,
           tabs: const [
             Tab(icon: Icon(Icons.folder_shared_outlined), text: 'Official Documents'),
             Tab(icon: Icon(Icons.groups_outlined), text: 'Meeting Minutes (MOM)'),
@@ -57,14 +142,14 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Tab 1: Documents
+          // Tab 1: Official Documents
           Column(
             children: [
-              // Category Filter Bar
+              // Filter Bar
               Container(
-                height: 54,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                color: Colors.white,
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                color: isDark ? AppColors.surfaceElevatedDark : Colors.white,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
@@ -77,92 +162,67 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
                 ),
               ),
               const Divider(height: 1),
+
               Expanded(
                 child: visibleDocs.isEmpty
-                    ? const Center(child: Text('No documents found in this category.'))
+                    ? const AppEmptyState(
+                        icon: Icons.folder_off_outlined,
+                        title: 'No Documents in Category',
+                        message: 'Official papers and audit reports uploaded will show here.',
+                      )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(14),
+                        padding: AppSpacing.screenPadding,
                         itemCount: visibleDocs.length,
                         itemBuilder: (ctx, i) {
                           final doc = visibleDocs[i];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: AppTheme.primaryNavy.withValues(alpha: 0.1),
-                                    child: const Icon(Icons.picture_as_pdf, color: AppTheme.dangerRed),
+
+                          return AppCard(
+                            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(AppSpacing.sm),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.errorContainer,
+                                    borderRadius: AppRadii.borderSm,
                                   ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                doc.title,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15,
-                                                ),
-                                              ),
+                                  child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.error, size: 24),
+                                ),
+                                AppSpacing.hGapMd,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              doc.title,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                            if (doc.isCommitteeOnly)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.warningOrange.withValues(alpha: 0.15),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: const Text(
-                                                  'CONFIDENTIAL',
-                                                  style: TextStyle(
-                                                    color: AppTheme.warningOrange,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          doc.description,
-                                          style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Size: ${doc.fileSize} • Uploaded by ${doc.uploadedByName}',
-                                              style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-                                            ),
-                                            const Spacer(),
-                                            OutlinedButton.icon(
-                                              icon: const Icon(Icons.download, size: 14),
-                                              label: const Text('Download PDF', style: TextStyle(fontSize: 12)),
-                                              style: OutlinedButton.styleFrom(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                                minimumSize: Size.zero,
-                                              ),
-                                              onPressed: () {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Downloading ${doc.title}...')),
-                                                );
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                          ),
+                                          if (doc.isCommitteeOnly)
+                                            const AppStatusChip.warning(label: 'CONFIDENTIAL'),
+                                        ],
+                                      ),
+                                      AppSpacing.vGapXs,
+                                      Text(
+                                        doc.description,
+                                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), height: 1.3),
+                                      ),
+                                      AppSpacing.vGapSm,
+                                      Text(
+                                        'Uploaded by: ${doc.uploadedByName} • ${doc.uploadedAt.day}/${doc.uploadedAt.month}/${doc.uploadedAt.year}',
+                                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -171,99 +231,65 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
             ],
           ),
 
-          // Tab 2: Meeting Minutes (AGM / EGM)
-          ListView.builder(
-            padding: const EdgeInsets.all(14),
-            itemCount: state.meetingMinutes.length,
-            itemBuilder: (ctx, i) {
-              final mom = state.meetingMinutes[i];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentTeal.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              mom.meetingType.toUpperCase(),
-                              style: const TextStyle(
-                                color: AppTheme.accentTeal,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${mom.meetingDate.day}/${mom.meetingDate.month}/${mom.meetingDate.year}',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        mom.meetingTitle,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Agenda: ${mom.agenda}',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.borderLight),
-                        ),
-                        child: Text(
-                          mom.minutesSummary,
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Tab 2: Meeting Minutes (MOM)
+          minutes.isEmpty
+              ? const AppEmptyState(
+                  icon: Icons.groups_outlined,
+                  title: 'No Meeting Minutes Filed',
+                  message: 'AGM and EGM official minutes with quorums will be cataloged here.',
+                )
+              : ListView.builder(
+                  padding: AppSpacing.screenPadding,
+                  itemCount: minutes.length,
+                  itemBuilder: (ctx, i) {
+                    final m = minutes[i];
+
+                    return AppCard(
+                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Icon(Icons.people_alt_outlined, size: 16, color: AppTheme.primaryNavy),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${mom.attendeesCount} Flats Present (Quorum Met)',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                              ),
+                              Text(m.meetingType, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              AppStatusChip.info(label: '${m.attendeesCount} Attendees'),
                             ],
                           ),
+                          AppSpacing.vGapXs,
                           Text(
-                            'Recorded by: ${mom.recordedByName}',
-                            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                            'Held on: ${m.meetingDate.day}/${m.meetingDate.month}/${m.meetingDate.year} • Recorded by ${m.recordedByName}',
+                            style: const TextStyle(fontSize: 11, color: Colors.grey),
                           ),
+                          AppSpacing.vGapSm,
+                          Text(m.minutesSummary, style: const TextStyle(fontSize: 12, height: 1.4)),
+                          if (m.agenda.isNotEmpty) ...[
+                            AppSpacing.vGapSm,
+                            Container(
+                              padding: AppSpacing.insetAllSm,
+                              decoration: BoxDecoration(
+                                color: isDark ? AppColors.surfaceElevatedDark : const Color(0xFFF1F5F9),
+                                borderRadius: AppRadii.borderSm,
+                              ),
+                              child: Text(
+                                'Agenda: ${m.agenda}',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ],
       ),
       floatingActionButton: isCommittee
           ? FloatingActionButton.extended(
-              backgroundColor: AppTheme.primaryNavy,
-              icon: const Icon(Icons.upload_file, color: Colors.white),
-              label: const Text('Upload Document', style: TextStyle(color: Colors.white)),
+              backgroundColor: AppColors.accentTeal,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.upload_file_rounded),
+              label: const Text('Upload Document'),
               onPressed: () => _showUploadDialog(context),
             )
           : null,
@@ -272,95 +298,21 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> with SingleTi
 
   Widget _buildCategoryChip(String label, DocumentCategory? cat) {
     final isSelected = _selectedCategory == cat;
+
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.only(right: 6),
       child: FilterChip(
-        selected: isSelected,
         label: Text(label),
-        selectedColor: AppTheme.primaryNavy.withValues(alpha: 0.15),
+        selected: isSelected,
+        selectedColor: AppColors.primaryContainer,
         labelStyle: TextStyle(
-          color: isSelected ? AppTheme.primaryNavy : Colors.grey.shade700,
+          color: isSelected ? AppColors.primaryNavy : AppColors.textSecondary(context),
+          fontSize: 11,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 12,
         ),
-        onSelected: (_) => setState(() => _selectedCategory = cat),
-      ),
-    );
-  }
-
-  void _showUploadDialog(BuildContext context) {
-    final titleCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
-    DocumentCategory category = DocumentCategory.byeLaws;
-    bool isConfidential = false;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Upload Society Document'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(labelText: 'Document Title'),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<DocumentCategory>(
-                  initialValue: category,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: const [
-                    DropdownMenuItem(value: DocumentCategory.byeLaws, child: Text('Society Bye-Laws')),
-                    DropdownMenuItem(value: DocumentCategory.auditReport, child: Text('Financial Audit Report')),
-                    DropdownMenuItem(value: DocumentCategory.insurance, child: Text('Insurance & Safety NOC')),
-                    DropdownMenuItem(value: DocumentCategory.legal, child: Text('Legal & Municipal Notices')),
-                    DropdownMenuItem(value: DocumentCategory.circular, child: Text('General Circular')),
-                  ],
-                  onChanged: (val) => setDialogState(() => category = val!),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Description / Purpose'),
-                ),
-                const SizedBox(height: 12),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Confidential (Committee Only)'),
-                  value: isConfidential,
-                  onChanged: (val) => setDialogState(() => isConfidential = val ?? false),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (titleCtrl.text.isNotEmpty) {
-                  widget.state.uploadDocument(
-                    title: titleCtrl.text,
-                    description: descCtrl.text,
-                    category: category,
-                    fileSize: '1.2 MB',
-                    isCommitteeOnly: isConfidential,
-                  );
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Document Saved to Society Vault!')),
-                  );
-                }
-              },
-              child: const Text('Upload & Save'),
-            ),
-          ],
-        ),
+        onSelected: (val) {
+          setState(() => _selectedCategory = val ? cat : null);
+        },
       ),
     );
   }

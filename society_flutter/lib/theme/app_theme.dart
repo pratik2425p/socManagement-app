@@ -1,81 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../core/core.dart';
 
+/// Legacy AppTheme Adapter - Delegates to Centralized Design System in lib/core
 class AppTheme {
-  // Brand Colors
-  static const Color primaryNavy = Color(0xFF0F3A66);
-  static const Color accentTeal = Color(0xFF0D9488);
-  static const Color darkSlate = Color(0xFF1E293B);
-  static const Color lightBackground = Color(0xFFF8FAFC);
-  static const Color surfaceCard = Colors.white;
-  static const Color borderLight = Color(0xFFE2E8F0);
+  AppTheme._();
+
+  // Brand Colors (Mirrored for backwards-compatibility)
+  static const Color primaryNavy = AppColors.primaryNavy;
+  static const Color accentTeal = AppColors.accentTeal;
+  static const Color darkSlate = AppColors.backgroundDark;
+  static const Color lightBackground = AppColors.backgroundLight;
+  static const Color surfaceCard = AppColors.surfaceLight;
+  static const Color borderLight = AppColors.borderLight;
 
   // Status Colors
-  static const Color successGreen = Color(0xFF10B981);
-  static const Color warningOrange = Color(0xFFF59E0B);
-  static const Color dangerRed = Color(0xFFEF4444);
-  static const Color infoBlue = Color(0xFF3B82F6);
+  static const Color successGreen = AppColors.success;
+  static const Color warningOrange = AppColors.warning;
+  static const Color dangerRed = AppColors.error;
+  static const Color infoBlue = AppColors.info;
 
-  static ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    scaffoldBackgroundColor: lightBackground,
-    primaryColor: primaryNavy,
-    textTheme: GoogleFonts.poppinsTextTheme(),
-    fontFamily: GoogleFonts.poppins().fontFamily,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryNavy,
-      primary: primaryNavy,
-      secondary: accentTeal,
-      surface: surfaceCard,
-      brightness: Brightness.light,
-    ),
-    appBarTheme: AppBarTheme(
-      backgroundColor: primaryNavy,
-      foregroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: false,
-      titleTextStyle: GoogleFonts.poppins(
-        fontSize: 17,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-    cardTheme: CardThemeData(
-      color: surfaceCard,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: borderLight, width: 1),
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryNavy,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: borderLight),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: borderLight),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: primaryNavy, width: 2),
-      ),
-    ),
-  );
+  // Material 3 Themes
+  static ThemeData get lightTheme => AppThemeData.lightTheme;
+  static ThemeData get darkTheme => AppThemeData.darkTheme;
 }

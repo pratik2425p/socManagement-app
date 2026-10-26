@@ -1490,6 +1490,37 @@ class _SocietyEndpoint {
       }
     });
   }
+
+  _i3.Future<_i15.SocietyUser?> loginWithPhone(
+    _i1.TestSessionBuilder sessionBuilder,
+    String phone,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'society',
+            method: 'loginWithPhone',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'society',
+          methodName: 'loginWithPhone',
+          parameters: _i1.testObjectToJson({'phone': phone}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i15.SocietyUser?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _DocumentEndpoint {

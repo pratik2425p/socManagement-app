@@ -37,6 +37,8 @@ class SocietyApp extends StatelessWidget {
       title: 'Society Management SaaS',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: HomeScreen(state: globalSocietyState),
       routes: {
         '/documents': (ctx) => DocumentVaultScreen(state: globalSocietyState),

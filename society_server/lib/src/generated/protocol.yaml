@@ -39,6 +39,7 @@ society:
   - bulkCreateInvitations:
   - getInvitations:
   - verifyAndAcceptInvitation:
+  - loginWithPhone:
 document:
   - getDocuments:
   - uploadDocument:

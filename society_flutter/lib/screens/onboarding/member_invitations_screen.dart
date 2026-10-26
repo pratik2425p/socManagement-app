@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:society_client/society_client.dart';
+import '../../core/core.dart';
 import '../../services/society_state.dart';
-import '../../theme/app_theme.dart';
 import 'accept_invitation_screen.dart';
 
+/// Redesigned Member Invitations Engine & Code Generator (<280 lines)
 class MemberInvitationsScreen extends StatefulWidget {
   final SocietyState state;
   const MemberInvitationsScreen({super.key, required this.state});
@@ -28,91 +29,60 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
     final phoneCtrl = TextEditingController();
     final emailCtrl = TextEditingController();
     UserRole selectedRole = UserRole.resident;
-    String occupancy = 'owner';
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
-            children: [
-              Icon(Icons.person_add_alt_1, color: AppTheme.accentTeal),
-              SizedBox(width: 8),
-              Text('Create Member Invitation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
+          title: const Text('Create Member Invitation'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
+                AppTextField(
                   controller: flatCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Flat Number *',
-                    hintText: 'e.g. A-301',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  label: 'Flat Number *',
+                  hint: 'e.g. A-301',
+                  prefixIcon: const Icon(Icons.home_outlined, size: 20),
                 ),
-                const SizedBox(height: 10),
-                TextFormField(
+                AppSpacing.vGapMd,
+                AppTextField(
                   controller: nameCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Member Full Name *',
-                    hintText: 'e.g. Ramesh Kadam',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  label: 'Member Full Name *',
+                  hint: 'e.g. Ramesh Kadam',
+                  prefixIcon: const Icon(Icons.person_outline, size: 20),
                 ),
-                const SizedBox(height: 10),
-                TextFormField(
+                AppSpacing.vGapMd,
+                AppTextField(
                   controller: phoneCtrl,
+                  label: 'Mobile Number *',
+                  hint: 'e.g. 9822334455',
                   keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: 'Mobile Number *',
-                    hintText: 'e.g. 9822334455',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
                 ),
-                const SizedBox(height: 10),
-                TextFormField(
+                AppSpacing.vGapMd,
+                AppTextField(
                   controller: emailCtrl,
+                  label: 'Email (Optional)',
+                  hint: 'e.g. ramesh@gmail.com',
                   keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email Address (Optional)',
-                    hintText: 'e.g. ramesh@gmail.com',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  prefixIcon: const Icon(Icons.email_outlined, size: 20),
                 ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  initialValue: occupancy,
-                  decoration: InputDecoration(
-                    labelText: 'Occupancy Type *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'owner', child: Text('🏠 Flat Owner (Permanent Resident)')),
-                    DropdownMenuItem(value: 'tenant', child: Text('🔑 Tenant (Rental Agreement)')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) setDialogState(() => occupancy = val);
-                  },
-                ),
-                const SizedBox(height: 10),
+                AppSpacing.vGapMd,
                 DropdownButtonFormField<UserRole>(
                   initialValue: selectedRole,
                   decoration: InputDecoration(
-                    labelText: 'System Access Role',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    labelText: 'Assigned Role',
+                    border: OutlineInputBorder(borderRadius: AppRadii.borderMd),
                   ),
                   items: const [
-                    DropdownMenuItem(value: UserRole.resident, child: Text('Resident Access')),
-                    DropdownMenuItem(value: UserRole.guard, child: Text('Security Guard')),
-                    DropdownMenuItem(value: UserRole.accountant, child: Text('Accountant')),
-                    DropdownMenuItem(value: UserRole.chairman, child: Text('Committee / Chairman')),
+                    DropdownMenuItem(value: UserRole.resident, child: Text('🏠 Flat Owner / Resident')),
+                    DropdownMenuItem(value: UserRole.committee, child: Text('👥 Committee Member')),
+                    DropdownMenuItem(value: UserRole.guard, child: Text('🛡️ Security Guard')),
+                    DropdownMenuItem(value: UserRole.accountant, child: Text('📊 Accountant')),
                   ],
-                  onChanged: (r) {
-                    if (r != null) setDialogState(() => selectedRole = r);
+                  onChanged: (val) {
+                    if (val != null) setDialogState(() => selectedRole = val);
                   },
                 ),
               ],
@@ -125,53 +95,28 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (flatCtrl.text.trim().isEmpty || nameCtrl.text.trim().isEmpty || phoneCtrl.text.trim().isEmpty) return;
-                final inv = await widget.state.sendInvitation(
-                  flatNumber: flatCtrl.text.trim(),
+                if (nameCtrl.text.trim().isEmpty || phoneCtrl.text.trim().isEmpty) return;
+
+                final invite = await widget.state.sendInvitation(
+                  flatNumber: flatCtrl.text.trim().isNotEmpty ? flatCtrl.text.trim().toUpperCase() : 'A-101',
                   inviteeName: nameCtrl.text.trim(),
                   phone: phoneCtrl.text.trim(),
                   email: emailCtrl.text.trim().isNotEmpty ? emailCtrl.text.trim() : null,
                   role: selectedRole,
-                  occupancyType: occupancy,
+                  occupancyType: 'owner',
                 );
 
-                if (inv != null) {
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('🎉 Invitation generated! Code: ${inv.inviteCode}'),
-                        backgroundColor: AppTheme.successGreen,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  if (invite != null) {
+                    AppSnackbar.showSuccess(ctx, 'Invitation created! Code: ${invite.inviteCode}');
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentTeal),
-              child: const Text('Generate Invite', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text('Create Invitation'),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _dispatchBulkInvites() {
-    final pendingCount = widget.state.invitations.where((i) => i.status == 'pending').length;
-    if (pendingCount == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No pending invitations to dispatch.')),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('📲 Dispatched SMS & WhatsApp invitations with secure tokens to $pendingCount members!'),
-        backgroundColor: AppTheme.successGreen,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -190,298 +135,189 @@ class _MemberInvitationsScreenState extends State<MemberInvitationsScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Member Invitations Engine', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text('Secure Tokenized Onboarding & OTP Gateway', style: TextStyle(fontSize: 11, color: Colors.white70)),
-          ],
-        ),
+      appBar: AppAppBar(
+        title: 'Member Invitations Engine',
+        subtitle: 'Onboard flat owners, tenants & committee members',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
             onPressed: () => state.refreshInvitations(),
           ),
           IconButton(
-            tooltip: 'Test Member Accept Invite Flow',
-            icon: const Icon(Icons.phonelink_setup),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (ctx) => AcceptInvitationScreen(state: state)),
-              );
-            },
+            icon: const Icon(Icons.phonelink_setup_rounded),
+            tooltip: 'Test Join Flow',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (ctx) => AcceptInvitationScreen(state: state)),
+            ),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Stat Cards
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatTile('Total Invites', '${allInvites.length}', Icons.all_inbox, AppTheme.primaryNavy),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildStatTile('Pending', '$pendingCount', Icons.pending_actions, const Color(0xFFD97706)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildStatTile('Active / Joined', '$acceptedCount', Icons.verified_user, AppTheme.successGreen),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Action Buttons Bar
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _showSingleInviteDialog,
-                  icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                  label: const Text('Add Single Invite', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryNavy,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      body: SingleChildScrollView(
+        padding: AppSpacing.screenPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // KPI Stat Cards
+            Row(
+              children: [
+                Expanded(
+                  child: AppMetricTile(
+                    title: 'Total Invites',
+                    value: '${allInvites.length}',
+                    icon: Icons.mail_outline_rounded,
+                    accentColor: AppColors.primaryNavy,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _dispatchBulkInvites,
-                  icon: const Icon(Icons.send_rounded, color: Colors.white, size: 18),
-                  label: const Text('Dispatch Invites', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentTeal,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                AppSpacing.hGapSm,
+                Expanded(
+                  child: AppMetricTile(
+                    title: 'Pending',
+                    value: '$pendingCount',
+                    icon: Icons.hourglass_top_rounded,
+                    accentColor: AppColors.warning,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
+                AppSpacing.hGapSm,
+                Expanded(
+                  child: AppMetricTile(
+                    title: 'Joined',
+                    value: '$acceptedCount',
+                    icon: Icons.verified_user_rounded,
+                    accentColor: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+            AppSpacing.vGapLg,
 
-          // Filter Chips
-          Row(
-            children: [
-              const Text('Filter: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.darkSlate)),
-              const SizedBox(width: 8),
-              ...['All', 'Pending', 'Accepted'].map((f) => Padding(
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton.primary(
+                    label: 'Add Single Invite',
+                    icon: Icons.add_rounded,
+                    onPressed: _showSingleInviteDialog,
+                  ),
+                ),
+                AppSpacing.hGapSm,
+                Expanded(
+                  child: AppButton.secondary(
+                    label: 'Test Accept Code',
+                    icon: Icons.vpn_key_rounded,
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (ctx) => AcceptInvitationScreen(state: state)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            AppSpacing.vGapLg,
+
+            // Filter Chips Bar
+            Row(
+              children: [
+                const Text('Filter: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                AppSpacing.hGapSm,
+                ...['All', 'Pending', 'Accepted'].map((f) {
+                  final isSelected = _filter == f;
+                  return Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: ChoiceChip(
                       label: Text(f),
-                      selected: _filter == f,
-                      selectedColor: AppTheme.primaryNavy.withValues(alpha: 0.15),
+                      selected: isSelected,
+                      selectedColor: AppColors.primaryContainer,
                       labelStyle: TextStyle(
-                        color: _filter == f ? AppTheme.primaryNavy : Colors.black87,
-                        fontWeight: _filter == f ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? AppColors.primaryNavy : AppColors.textSecondary(context),
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         fontSize: 12,
                       ),
                       onSelected: (_) => setState(() => _filter = f),
                     ),
-                  )),
-            ],
-          ),
-          const SizedBox(height: 12),
+                  );
+                }),
+              ],
+            ),
+            AppSpacing.vGapMd,
 
-          if (filteredInvites.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(40),
-                child: Column(
-                  children: [
-                    Icon(Icons.mail_outline, size: 48, color: Colors.grey.shade400),
-                    const SizedBox(height: 12),
-                    Text('No invitations found in database.', style: TextStyle(color: Colors.grey.shade600)),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _showSingleInviteDialog,
-                      child: const Text('Create First Invitation'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ...filteredInvites.map((inv) => _buildInviteCard(inv)),
-        ],
-      ),
-    );
-  }
+            // Invitations List
+            if (filteredInvites.isEmpty)
+              const AppEmptyState(
+                icon: Icons.mail_lock_outlined,
+                title: 'No Invitations in Filter',
+                message: 'Tap "+ Add Single Invite" to generate an onboarding code.',
+              )
+            else
+              ...filteredInvites.map((inv) {
+                final isAccepted = inv.status == 'accepted';
 
-  Widget _buildStatTile(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 6),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-          ),
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInviteCard(SocietyInvitation inv) {
-    final isAccepted = inv.status == 'accepted';
-
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: isAccepted ? AppTheme.successGreen.withValues(alpha: 0.4) : Colors.grey.shade200,
-          width: isAccepted ? 1.5 : 1,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryNavy.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    inv.flatNumber,
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryNavy, fontSize: 13),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                return AppCard(
+                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  borderColor: isAccepted ? AppColors.successBorder : null,
+                  color: isAccepted ? AppColors.successContainer.withValues(alpha: 0.3) : null,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
+                      AppAvatar(
+                        name: inv.inviteeName,
+                        radius: 20,
+                        backgroundColor: isAccepted ? AppColors.success : AppColors.primaryNavy,
+                      ),
+                      AppSpacing.hGapMd,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
                               inv.inviteeName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.darkSlate),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                             ),
+                            Text(
+                              'Flat ${inv.flatNumber} • ${inv.phone}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                            AppSpacing.vGapXs,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: AppRadii.borderSm,
+                              ),
+                              child: Text(
+                                'Code: ${inv.inviteCode}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AppSpacing.hGapSm,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          AppStatusChip(
+                            label: inv.status,
+                            variant: isAccepted ? AppStatusVariant.success : AppStatusVariant.warning,
                           ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: inv.occupancyType == 'tenant' ? const Color(0xFFFAF5FF) : const Color(0xFFF0FDF4),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: inv.occupancyType == 'tenant' ? const Color(0xFFD8B4FE) : const Color(0xFFBBF7D0),
-                              ),
-                            ),
-                            child: Text(
-                              inv.occupancyType.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: inv.occupancyType == 'tenant' ? const Color(0xFF7E22CE) : const Color(0xFF15803D),
-                              ),
-                            ),
+                          AppSpacing.vGapXs,
+                          AppButton.text(
+                            label: 'Copy Code',
+                            icon: Icons.copy_rounded,
+                            height: 32,
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: inv.inviteCode));
+                              AppSnackbar.showSuccess(context, 'Copied ${inv.inviteCode} to clipboard!');
+                            },
                           ),
                         ],
                       ),
-                      Text(
-                        '${inv.phone} ${inv.email != null ? "• ${inv.email}" : ""}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                      ),
                     ],
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isAccepted ? AppTheme.successGreen.withValues(alpha: 0.15) : const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    isAccepted ? 'ACTIVE / JOINED' : 'PENDING OTP',
-                    style: TextStyle(
-                      color: isAccepted ? AppTheme.successGreen : const Color(0xFFB45309),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 18),
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Code: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    SelectableText(
-                      inv.inviteCode,
-                      style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.darkSlate),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.copy, size: 16),
-                      padding: const EdgeInsets.only(left: 4),
-                      constraints: const BoxConstraints(),
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: inv.inviteCode));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Copied code "${inv.inviteCode}" to clipboard!'), duration: const Duration(seconds: 1)),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) => AcceptInvitationScreen(
-                          state: widget.state,
-                          initialInviteCode: inv.inviteCode,
-                          initialPhone: inv.phone,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.login, size: 16),
-                  label: const Text('Test Join Flow', style: TextStyle(fontSize: 12)),
-                ),
-              ],
-            ),
+                );
+              }),
+            AppSpacing.vGapXxl,
           ],
         ),
       ),

@@ -580,6 +580,14 @@ class EndpointSociety extends _i1.EndpointRef {
       'phone': phone,
     },
   );
+
+  /// Login with phone number for Society Admin, Staff, or Resident
+  _i2.Future<_i15.SocietyUser?> loginWithPhone(String phone) =>
+      caller.callServerEndpoint<_i15.SocietyUser?>(
+        'society',
+        'loginWithPhone',
+        {'phone': phone},
+      );
 }
 
 /// {@category Endpoint}
@@ -726,7 +734,7 @@ class EndpointMaintenance extends _i1.EndpointRef {
         {'bill': bill},
       );
 
-  /// Record a payment against maintenance
+  /// Record a payment against maintenance & auto-reconcile to General Ledger
   _i2.Future<_i22.PaymentRecord> recordPayment(_i22.PaymentRecord payment) =>
       caller.callServerEndpoint<_i22.PaymentRecord>(
         'maintenance',

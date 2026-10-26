@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../core/core.dart';
 import '../../services/extended_features.dart';
 import '../../services/society_state.dart';
-import '../../theme/app_theme.dart';
 
+/// Redesigned Compliance Audit Trail Screen
 class AuditTrailScreen extends StatefulWidget {
   final SocietyState state;
   const AuditTrailScreen({super.key, required this.state});
@@ -14,72 +15,73 @@ class AuditTrailScreen extends StatefulWidget {
 class _AuditTrailScreenState extends State<AuditTrailScreen> {
   String _selectedCategory = 'All';
 
+  final List<String> _categories = [
+    'All',
+    'Financial',
+    'Gate & Security',
+    'Governance',
+    'Member & Flat',
+    'Amenity',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final state = widget.state;
-    final allLogs = state.auditLogs;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final allLogs = widget.state.auditLogs;
 
     final filteredLogs = _selectedCategory == 'All'
         ? allLogs
         : allLogs.where((l) => l.category == _selectedCategory).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Society Audit Trail & Logs', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+      appBar: AppAppBar(
+        title: 'Society Compliance Audit Trail',
+        subtitle: 'Statutory log of financial, security & governance actions',
       ),
       body: Column(
         children: [
-          // Compliance Header Banner
+          // Compliance Banner
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFFF8FAFC),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: isDark ? AppColors.surfaceElevatedDark : const Color(0xFFF1F5F9),
             child: Row(
               children: [
-                const Icon(Icons.security, size: 20, color: AppTheme.primaryNavy),
-                const SizedBox(width: 8),
-                const Expanded(
+                const Icon(Icons.security_rounded, size: 20, color: AppColors.accentTeal),
+                AppSpacing.hGapMd,
+                Expanded(
                   child: Text(
-                    'Immutable Audit Log: Records all financial approvals, gate passes, voting, and notices for regulatory compliance.',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF334155), fontWeight: FontWeight.w500),
+                    'Immutable Audit Trail: All voucher executions, gate check-ins, NOCs, and secret ballots are timestamped.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryNavy.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${allLogs.length} Events',
-                    style: const TextStyle(color: AppTheme.primaryNavy, fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
+                AppSpacing.hGapSm,
+                AppStatusChip(
+                  label: '${allLogs.length} EVENTS',
+                  variant: AppStatusVariant.info,
                 ),
               ],
             ),
           ),
 
-          // Category Chips
+          // Category Chips Bar
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              children: [
-                'All',
-                'Financial',
-                'Gate & Security',
-                'Governance',
-                'Member & Flat',
-                'Amenity'
-              ].map((cat) {
+              children: _categories.map((cat) {
                 final isSelected = _selectedCategory == cat;
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 6),
                   child: ChoiceChip(
                     label: Text(cat),
                     selected: isSelected,
-                    selectedColor: AppTheme.primaryNavy,
+                    selectedColor: AppColors.primaryContainer,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppTheme.darkSlate,
+                      color: isSelected ? AppColors.primaryNavy : AppColors.textSecondary(context),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: 12,
                     ),
@@ -91,38 +93,20 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
               }).toList(),
             ),
           ),
-
           const Divider(height: 1),
 
-          // Log List
+          // Log Entries List
           Expanded(
             child: filteredLogs.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.history, size: 48, color: Colors.grey.shade400),
-                          const SizedBox(height: 12),
-                          const Text('No Audit Events Recorded Yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Administrative actions like voucher approvals, payments, gate check-ins, and notices will appear here automatically.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                          ),
-                        ],
-                      ),
-                    ),
+                ? const AppEmptyState(
+                    icon: Icons.shield_outlined,
+                    title: 'No Audit Records',
+                    message: 'Events logged in this category will appear here.',
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: AppSpacing.screenPadding,
                     itemCount: filteredLogs.length,
-                    itemBuilder: (ctx, i) {
-                      final item = filteredLogs[i];
-                      return _buildAuditCard(item);
-                    },
+                    itemBuilder: (ctx, i) => _buildAuditCard(context, filteredLogs[i]),
                   ),
           ),
         ],
@@ -130,98 +114,85 @@ class _AuditTrailScreenState extends State<AuditTrailScreen> {
     );
   }
 
-  Widget _buildAuditCard(AuditLogEntry item) {
-    Color badgeColor = AppTheme.primaryNavy;
-    IconData badgeIcon = Icons.info_outline;
+  Widget _buildAuditCard(BuildContext context, AuditLogEntry item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    Color categoryColor;
+    IconData categoryIcon;
     switch (item.category) {
       case 'Financial':
-        badgeColor = const Color(0xFF0D9488);
-        badgeIcon = Icons.account_balance_wallet;
+        categoryColor = AppColors.success;
+        categoryIcon = Icons.account_balance_wallet_rounded;
         break;
       case 'Gate & Security':
-        badgeColor = const Color(0xFFD97706);
-        badgeIcon = Icons.shield;
+        categoryColor = AppColors.warning;
+        categoryIcon = Icons.shield_rounded;
         break;
       case 'Governance':
-        badgeColor = const Color(0xFF4F46E5);
-        badgeIcon = Icons.how_to_vote;
+        categoryColor = const Color(0xFF7C3AED);
+        categoryIcon = Icons.how_to_vote_rounded;
         break;
       case 'Member & Flat':
-        badgeColor = const Color(0xFF2563EB);
-        badgeIcon = Icons.people_alt;
+        categoryColor = AppColors.accentTeal;
+        categoryIcon = Icons.apartment_rounded;
         break;
-      case 'Amenity':
-        badgeColor = const Color(0xFF059669);
-        badgeIcon = Icons.sports_tennis;
-        break;
+      default:
+        categoryColor = AppColors.primaryNavy;
+        categoryIcon = Icons.event_note_rounded;
     }
 
-    final timeStr = '${item.timestamp.hour.toString().padLeft(2, '0')}:${item.timestamp.minute.toString().padLeft(2, '0')}';
-    final dateStr = '${item.timestamp.day}/${item.timestamp.month}/${item.timestamp.year}';
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundColor: badgeColor.withValues(alpha: 0.15),
-                      child: Icon(badgeIcon, size: 14, color: badgeColor),
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    decoration: BoxDecoration(
+                      color: categoryColor.withValues(alpha: 0.15),
+                      borderRadius: AppRadii.borderSm,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      item.action.replaceAll('_', ' '),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: badgeColor,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  '$dateStr $timeStr',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontFamily: 'monospace'),
-                ),
-              ],
+                    child: Icon(categoryIcon, size: 16, color: categoryColor),
+                  ),
+                  AppSpacing.hGapSm,
+                  Text(
+                    item.action,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ],
+              ),
+              AppStatusChip(label: item.category),
+            ],
+          ),
+          AppSpacing.vGapSm,
+          Text(
+            item.description,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              height: 1.35,
             ),
-            const SizedBox(height: 8),
-            Text(
-              item.description,
-              style: const TextStyle(fontSize: 13, color: AppTheme.darkSlate, height: 1.3),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.person, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${item.actorName} (${item.actorRole})',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
-                    ),
-                  ],
-                ),
-                Text(
-                  item.id,
-                  style: TextStyle(fontSize: 10, color: Colors.grey.shade400, fontFamily: 'monospace'),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+          AppSpacing.vGapSm,
+          Row(
+            children: [
+              Text(
+                'By: ${item.actorName} (${item.actorRole})',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.grey),
+              ),
+              const Spacer(),
+              Text(
+                '${item.timestamp.hour.toString().padLeft(2, '0')}:${item.timestamp.minute.toString().padLeft(2, '0')} • ${item.timestamp.day}/${item.timestamp.month}',
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
