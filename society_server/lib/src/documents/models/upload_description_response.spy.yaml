@@ -1,0 +1,4 @@
+class: UploadDescriptionResponse
+fields:
+  uploadDescription: String
+  storagePath: String

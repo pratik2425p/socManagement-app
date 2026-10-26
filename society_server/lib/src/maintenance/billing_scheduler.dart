@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
+import '../notifications/fcm_service.dart';
 
 /// Automatic Recurring Maintenance Billing Scheduler
 /// Runs periodically (or on server boot) to generate monthly maintenance
@@ -71,17 +72,15 @@ class BillingScheduler {
                 session,
                 where: (t) => t.societyId.equals(societyId),
               );
-              if (building == null) {
-                building = await Building.db.insertRow(
-                  session,
-                  Building(
-                    societyId: societyId,
-                    name: 'Wing A',
-                    totalFloors: 10,
-                    createdAt: DateTime.now(),
-                  ),
-                );
-              }
+              building ??= await Building.db.insertRow(
+                session,
+                Building(
+                  societyId: societyId,
+                  name: 'Wing A',
+                  totalFloors: 10,
+                  createdAt: DateTime.now(),
+                ),
+              );
 
               final flat = await Flat.db.insertRow(
                 session,
@@ -132,6 +131,16 @@ class BillingScheduler {
             await MaintenanceBill.db.insertRow(session, newBill);
             billsGenerated++;
             session.log('[BillingScheduler] Generated $billNumber for Flat ${flat.flatNumber} in ${society.name}');
+
+            await FcmService.sendToFlat(
+              session,
+              societyId: societyId,
+              flatNumber: flat.flatNumber,
+              title: '📄 Maintenance Bill Generated',
+              body: 'Maintenance bill of ₹${maintenanceRate.toStringAsFixed(0)} for $currentMonthName has been issued.',
+              highPriority: false,
+              data: {'type': 'bill_reminder', 'billNumber': billNumber},
+            );
           }
         }
       }

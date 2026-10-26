@@ -9,3 +9,6 @@ workspace:
   - society_server
   - society_flutter
 
+dependency_overrides:
+  archive: ^4.1.0
+

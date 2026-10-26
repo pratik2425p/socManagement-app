@@ -10,10 +10,12 @@ import 'dashboard/guard_dashboard.dart';
 import 'dashboard/resident_dashboard.dart';
 import 'dashboard/saas_admin_dashboard.dart';
 import 'documents/document_vault_screen.dart';
+import 'home/home_nav_config.dart';
 import 'onboarding/society_setup_wizard_screen.dart';
 import 'polling/polling_screen.dart';
 import 'profile/user_management_sheet.dart';
 import 'saas/super_admin_portal_screen.dart';
+import 'sign_in_screen.dart';
 
 /// Central Shell Scaffold with Adaptive Navigation (NavigationRail on Web/Desktop, BottomNav on Mobile)
 class HomeScreen extends StatefulWidget {
@@ -50,23 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } else {
       setState(() {});
-    }
-  }
-
-  String _getRoleLabel(UserRole role) {
-    switch (role) {
-      case UserRole.resident:
-        return 'Resident';
-      case UserRole.guard:
-        return 'Security Guard';
-      case UserRole.chairman:
-        return 'Society Admin';
-      case UserRole.committee:
-        return 'Committee';
-      case UserRole.accountant:
-        return 'Accountant';
-      case UserRole.admin:
-        return 'SaaS Admin';
     }
   }
 
@@ -123,56 +108,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  List<BottomNavigationBarItem> _getNavItemsForRole(UserRole role) {
-    switch (role) {
-      case UserRole.resident:
-        return const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.folder_shared_outlined), label: 'Vault'),
-          BottomNavigationBarItem(icon: Icon(Icons.how_to_vote_outlined), label: 'Polling'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_tennis_rounded), label: 'Amenities'),
-        ];
-
-      case UserRole.chairman:
-      case UserRole.committee:
-        return const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Overview'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_suggest_rounded), label: 'Setup'),
-          BottomNavigationBarItem(icon: Icon(Icons.folder_shared_outlined), label: 'Vault'),
-          BottomNavigationBarItem(icon: Icon(Icons.how_to_vote_outlined), label: 'Polling'),
-          BottomNavigationBarItem(icon: Icon(Icons.security_update_good_rounded), label: 'Audit'),
-        ];
-
-      case UserRole.guard:
-        return const [
-          BottomNavigationBarItem(icon: Icon(Icons.security_rounded), label: 'Gate Console'),
-          BottomNavigationBarItem(icon: Icon(Icons.qr_code_scanner_rounded), label: 'Pass Scanner'),
-          BottomNavigationBarItem(icon: Icon(Icons.history_rounded), label: 'Daily Log'),
-        ];
-
-      case UserRole.accountant:
-        return const [
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_rounded), label: 'Accounting'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_rounded), label: 'Bills & Dues'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart_rounded), label: 'Ledger'),
-        ];
-
-      case UserRole.admin:
-        return const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize_rounded), label: 'SaaS Overview'),
-          BottomNavigationBarItem(icon: Icon(Icons.business_center_rounded), label: 'Subscriptions'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_business_rounded), label: 'Onboard Society'),
-        ];
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
+
+    // Direct unauthenticated users to the SMS OTP Sign In Screen
+    if (!state.isLoggedIn) {
+      return SignInScreen(state: state);
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWide = context.isWide;
-    final navItems = _getNavItemsForRole(state.currentRole);
-
+    final navItems = HomeNavConfig.getNavItemsForRole(state.currentRole);
     final safeIndex = _currentIndex < navItems.length ? _currentIndex : 0;
 
     return Scaffold(
@@ -205,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     state.currentRole == UserRole.admin
                         ? 'Global Multi-Tenant SaaS'
-                        : '${state.currentSociety?.code != null && state.currentSociety!.code.isNotEmpty ? "Reg: ${state.currentSociety!.code} • " : ""}${state.currentUserName.isNotEmpty ? "${state.currentUserName} (${_getRoleLabel(state.currentRole)})" : _getRoleLabel(state.currentRole)}',
+                        : '${state.currentSociety?.code != null && state.currentSociety!.code.isNotEmpty ? "Reg: ${state.currentSociety!.code} • " : ""}${state.currentUserName.isNotEmpty ? "${state.currentUserName} (${HomeNavConfig.getRoleLabel(state.currentRole)})" : HomeNavConfig.getRoleLabel(state.currentRole)}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.white.withValues(alpha: 0.85),

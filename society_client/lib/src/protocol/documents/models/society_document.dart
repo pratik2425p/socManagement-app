@@ -20,6 +20,7 @@ abstract class SocietyDocument implements _i1.SerializableModel {
     required this.title,
     required this.description,
     required this.category,
+    this.storagePath,
     required this.fileUrl,
     required this.fileSize,
     required this.uploadedByName,
@@ -33,6 +34,7 @@ abstract class SocietyDocument implements _i1.SerializableModel {
     required String title,
     required String description,
     required _i2.DocumentCategory category,
+    String? storagePath,
     required String fileUrl,
     required String fileSize,
     required String uploadedByName,
@@ -49,6 +51,7 @@ abstract class SocietyDocument implements _i1.SerializableModel {
       category: _i2.DocumentCategory.fromJson(
         (jsonSerialization['category'] as String),
       ),
+      storagePath: jsonSerialization['storagePath'] as String?,
       fileUrl: jsonSerialization['fileUrl'] as String,
       fileSize: jsonSerialization['fileSize'] as String,
       uploadedByName: jsonSerialization['uploadedByName'] as String,
@@ -74,6 +77,8 @@ abstract class SocietyDocument implements _i1.SerializableModel {
 
   _i2.DocumentCategory category;
 
+  String? storagePath;
+
   String fileUrl;
 
   String fileSize;
@@ -93,6 +98,7 @@ abstract class SocietyDocument implements _i1.SerializableModel {
     String? title,
     String? description,
     _i2.DocumentCategory? category,
+    String? storagePath,
     String? fileUrl,
     String? fileSize,
     String? uploadedByName,
@@ -108,6 +114,7 @@ abstract class SocietyDocument implements _i1.SerializableModel {
       'title': title,
       'description': description,
       'category': category.toJson(),
+      if (storagePath != null) 'storagePath': storagePath,
       'fileUrl': fileUrl,
       'fileSize': fileSize,
       'uploadedByName': uploadedByName,
@@ -131,6 +138,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
     required String title,
     required String description,
     required _i2.DocumentCategory category,
+    String? storagePath,
     required String fileUrl,
     required String fileSize,
     required String uploadedByName,
@@ -142,6 +150,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
          title: title,
          description: description,
          category: category,
+         storagePath: storagePath,
          fileUrl: fileUrl,
          fileSize: fileSize,
          uploadedByName: uploadedByName,
@@ -159,6 +168,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
     String? title,
     String? description,
     _i2.DocumentCategory? category,
+    Object? storagePath = _Undefined,
     String? fileUrl,
     String? fileSize,
     String? uploadedByName,
@@ -171,6 +181,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
       title: title ?? this.title,
       description: description ?? this.description,
       category: category ?? this.category,
+      storagePath: storagePath is String? ? storagePath : this.storagePath,
       fileUrl: fileUrl ?? this.fileUrl,
       fileSize: fileSize ?? this.fileSize,
       uploadedByName: uploadedByName ?? this.uploadedByName,

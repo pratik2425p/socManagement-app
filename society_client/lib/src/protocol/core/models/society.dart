@@ -25,6 +25,8 @@ abstract class Society implements _i1.SerializableModel {
     required this.subscriptionPlan,
     required this.subscriptionStatus,
     this.complexId,
+    this.registrationNumber,
+    this.gstin,
     required this.createdAt,
   });
 
@@ -40,6 +42,8 @@ abstract class Society implements _i1.SerializableModel {
     required String subscriptionPlan,
     required String subscriptionStatus,
     int? complexId,
+    String? registrationNumber,
+    String? gstin,
     required DateTime createdAt,
   }) = _SocietyImpl;
 
@@ -56,6 +60,8 @@ abstract class Society implements _i1.SerializableModel {
       subscriptionPlan: jsonSerialization['subscriptionPlan'] as String,
       subscriptionStatus: jsonSerialization['subscriptionStatus'] as String,
       complexId: jsonSerialization['complexId'] as int?,
+      registrationNumber: jsonSerialization['registrationNumber'] as String?,
+      gstin: jsonSerialization['gstin'] as String?,
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -87,6 +93,10 @@ abstract class Society implements _i1.SerializableModel {
 
   int? complexId;
 
+  String? registrationNumber;
+
+  String? gstin;
+
   DateTime createdAt;
 
   /// Returns a shallow copy of this [Society]
@@ -104,6 +114,8 @@ abstract class Society implements _i1.SerializableModel {
     String? subscriptionPlan,
     String? subscriptionStatus,
     int? complexId,
+    String? registrationNumber,
+    String? gstin,
     DateTime? createdAt,
   });
   @override
@@ -121,6 +133,8 @@ abstract class Society implements _i1.SerializableModel {
       'subscriptionPlan': subscriptionPlan,
       'subscriptionStatus': subscriptionStatus,
       if (complexId != null) 'complexId': complexId,
+      if (registrationNumber != null) 'registrationNumber': registrationNumber,
+      if (gstin != null) 'gstin': gstin,
       'createdAt': createdAt.toJson(),
     };
   }
@@ -146,6 +160,8 @@ class _SocietyImpl extends Society {
     required String subscriptionPlan,
     required String subscriptionStatus,
     int? complexId,
+    String? registrationNumber,
+    String? gstin,
     required DateTime createdAt,
   }) : super._(
          id: id,
@@ -159,6 +175,8 @@ class _SocietyImpl extends Society {
          subscriptionPlan: subscriptionPlan,
          subscriptionStatus: subscriptionStatus,
          complexId: complexId,
+         registrationNumber: registrationNumber,
+         gstin: gstin,
          createdAt: createdAt,
        );
 
@@ -178,6 +196,8 @@ class _SocietyImpl extends Society {
     String? subscriptionPlan,
     String? subscriptionStatus,
     Object? complexId = _Undefined,
+    Object? registrationNumber = _Undefined,
+    Object? gstin = _Undefined,
     DateTime? createdAt,
   }) {
     return Society(
@@ -192,6 +212,10 @@ class _SocietyImpl extends Society {
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       complexId: complexId is int? ? complexId : this.complexId,
+      registrationNumber: registrationNumber is String?
+          ? registrationNumber
+          : this.registrationNumber,
+      gstin: gstin is String? ? gstin : this.gstin,
       createdAt: createdAt ?? this.createdAt,
     );
   }

@@ -1,0 +1,14 @@
+class: RazorpayOrderResponse
+fields:
+  orderId: String
+  billId: int
+  societyId: int
+  amountPaise: int
+  amountRupees: double
+  currency: String
+  keyId: String
+  billNumber: String
+  flatNumber: String
+  payerName: String
+  payerPhone: String?
+  payerEmail: String?

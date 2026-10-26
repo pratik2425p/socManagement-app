@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
+import '../notifications/fcm_service.dart';
 
 class MaintenanceEndpoint extends Endpoint {
   /// Get all maintenance bills for a society, optionally filtered by flat
@@ -20,7 +21,19 @@ class MaintenanceEndpoint extends Endpoint {
 
   /// Generate/Create a maintenance bill
   Future<MaintenanceBill> createBill(Session session, MaintenanceBill bill) async {
-    return await MaintenanceBill.db.insertRow(session, bill);
+    final created = await MaintenanceBill.db.insertRow(session, bill);
+
+    await FcmService.sendToFlat(
+      session,
+      societyId: created.societyId,
+      flatNumber: created.flatNumber,
+      title: '📄 Maintenance Bill Generated',
+      body: 'Maintenance bill of ₹${created.amount.toStringAsFixed(0)} for ${created.billingMonth} has been issued.',
+      highPriority: false,
+      data: {'type': 'bill_reminder', 'billId': created.id.toString()},
+    );
+
+    return created;
   }
 
   /// Record a payment against maintenance & auto-reconcile to General Ledger

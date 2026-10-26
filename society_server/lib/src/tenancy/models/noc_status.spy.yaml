@@ -1,0 +1,6 @@
+enum: NocStatus
+values:
+  - pending
+  - approved
+  - rejected
+  - expired

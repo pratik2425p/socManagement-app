@@ -26,6 +26,8 @@ abstract class Society
     required this.subscriptionPlan,
     required this.subscriptionStatus,
     this.complexId,
+    this.registrationNumber,
+    this.gstin,
     required this.createdAt,
   });
 
@@ -41,6 +43,8 @@ abstract class Society
     required String subscriptionPlan,
     required String subscriptionStatus,
     int? complexId,
+    String? registrationNumber,
+    String? gstin,
     required DateTime createdAt,
   }) = _SocietyImpl;
 
@@ -57,6 +61,8 @@ abstract class Society
       subscriptionPlan: jsonSerialization['subscriptionPlan'] as String,
       subscriptionStatus: jsonSerialization['subscriptionStatus'] as String,
       complexId: jsonSerialization['complexId'] as int?,
+      registrationNumber: jsonSerialization['registrationNumber'] as String?,
+      gstin: jsonSerialization['gstin'] as String?,
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -90,6 +96,10 @@ abstract class Society
 
   int? complexId;
 
+  String? registrationNumber;
+
+  String? gstin;
+
   DateTime createdAt;
 
   @override
@@ -110,6 +120,8 @@ abstract class Society
     String? subscriptionPlan,
     String? subscriptionStatus,
     int? complexId,
+    String? registrationNumber,
+    String? gstin,
     DateTime? createdAt,
   });
   @override
@@ -127,6 +139,8 @@ abstract class Society
       'subscriptionPlan': subscriptionPlan,
       'subscriptionStatus': subscriptionStatus,
       if (complexId != null) 'complexId': complexId,
+      if (registrationNumber != null) 'registrationNumber': registrationNumber,
+      if (gstin != null) 'gstin': gstin,
       'createdAt': createdAt.toJson(),
     };
   }
@@ -146,6 +160,8 @@ abstract class Society
       'subscriptionPlan': subscriptionPlan,
       'subscriptionStatus': subscriptionStatus,
       if (complexId != null) 'complexId': complexId,
+      if (registrationNumber != null) 'registrationNumber': registrationNumber,
+      if (gstin != null) 'gstin': gstin,
       'createdAt': createdAt.toJson(),
     };
   }
@@ -195,6 +211,8 @@ class _SocietyImpl extends Society {
     required String subscriptionPlan,
     required String subscriptionStatus,
     int? complexId,
+    String? registrationNumber,
+    String? gstin,
     required DateTime createdAt,
   }) : super._(
          id: id,
@@ -208,6 +226,8 @@ class _SocietyImpl extends Society {
          subscriptionPlan: subscriptionPlan,
          subscriptionStatus: subscriptionStatus,
          complexId: complexId,
+         registrationNumber: registrationNumber,
+         gstin: gstin,
          createdAt: createdAt,
        );
 
@@ -227,6 +247,8 @@ class _SocietyImpl extends Society {
     String? subscriptionPlan,
     String? subscriptionStatus,
     Object? complexId = _Undefined,
+    Object? registrationNumber = _Undefined,
+    Object? gstin = _Undefined,
     DateTime? createdAt,
   }) {
     return Society(
@@ -241,6 +263,10 @@ class _SocietyImpl extends Society {
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       complexId: complexId is int? ? complexId : this.complexId,
+      registrationNumber: registrationNumber is String?
+          ? registrationNumber
+          : this.registrationNumber,
+      gstin: gstin is String? ? gstin : this.gstin,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -301,6 +327,17 @@ class SocietyUpdateTable extends _i1.UpdateTable<SocietyTable> {
     value,
   );
 
+  _i1.ColumnValue<String, String> registrationNumber(String? value) =>
+      _i1.ColumnValue(
+        table.registrationNumber,
+        value,
+      );
+
+  _i1.ColumnValue<String, String> gstin(String? value) => _i1.ColumnValue(
+    table.gstin,
+    value,
+  );
+
   _i1.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _i1.ColumnValue(
         table.createdAt,
@@ -351,6 +388,14 @@ class SocietyTable extends _i1.Table<int?> {
       'complexId',
       this,
     );
+    registrationNumber = _i1.ColumnString(
+      'registrationNumber',
+      this,
+    );
+    gstin = _i1.ColumnString(
+      'gstin',
+      this,
+    );
     createdAt = _i1.ColumnDateTime(
       'createdAt',
       this,
@@ -379,6 +424,10 @@ class SocietyTable extends _i1.Table<int?> {
 
   late final _i1.ColumnInt complexId;
 
+  late final _i1.ColumnString registrationNumber;
+
+  late final _i1.ColumnString gstin;
+
   late final _i1.ColumnDateTime createdAt;
 
   @override
@@ -394,6 +443,8 @@ class SocietyTable extends _i1.Table<int?> {
     subscriptionPlan,
     subscriptionStatus,
     complexId,
+    registrationNumber,
+    gstin,
     createdAt,
   ];
 }

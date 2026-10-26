@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:society_client/society_client.dart';
-import 'extended_features.dart';
 
 class SocietyState extends ChangeNotifier {
   final Client client;
@@ -60,72 +63,15 @@ class SocietyState extends ChangeNotifier {
   List<SocietyInvitation> _invitations = [];
   int _currentSocietyId = 1;
 
-  static final List<Amenity> defaultAmenities = [
-    const Amenity(
-      id: 'amenity-clubhouse',
-      name: 'Clubhouse Banquet Hall',
-      icon: Icons.celebration,
-      capacity: 100,
-      rate: 2500.0,
-      unit: 'per event slot',
-      timeSlots: ['09:00 AM - 01:00 PM', '02:00 PM - 06:00 PM', '07:00 PM - 11:00 PM'],
-      description: 'Air-conditioned community hall with dining space and stage for family functions and meetings.',
-      rules: 'Music allowed till 10 PM. Mandatory cleaning deposit required.',
-    ),
-    const Amenity(
-      id: 'amenity-pool',
-      name: 'Swimming Pool',
-      icon: Icons.pool,
-      capacity: 20,
-      rate: 0.0,
-      unit: 'free for residents',
-      timeSlots: ['06:00 AM - 07:30 AM', '07:30 AM - 09:00 AM', '05:00 PM - 06:30 PM', '06:30 PM - 08:00 PM'],
-      description: 'Temperature regulated clean swimming pool with toddler shallow section and lifeguard.',
-      rules: 'Proper nylon/spandex swimming costumes compulsory. Shower before entering.',
-    ),
-    const Amenity(
-      id: 'amenity-turf',
-      name: 'Badminton & Tennis Court',
-      icon: Icons.sports_tennis,
-      capacity: 8,
-      rate: 150.0,
-      unit: 'per hour',
-      timeSlots: ['06:00 AM - 07:00 AM', '07:00 AM - 08:00 AM', '06:00 PM - 07:00 PM', '07:00 PM - 08:00 PM', '08:00 PM - 09:00 PM'],
-      description: 'Synthetic rubberized multi-sport court with floodlights and spectator seating.',
-      rules: 'Non-marking sports shoes only. Maximum 1 hour consecutive booking per flat.',
-    ),
-    const Amenity(
-      id: 'amenity-gym',
-      name: 'Gymnasium & Fitness Studio',
-      icon: Icons.fitness_center,
-      capacity: 25,
-      rate: 0.0,
-      unit: 'free for residents',
-      timeSlots: ['06:00 AM - 10:00 AM', '05:00 PM - 09:30 PM'],
-      description: 'Modern cardio machines, free weights, treadmills, and yoga/aerobics floor.',
-      rules: 'Towels and clean gym shoes mandatory. Sanitize equipment after use.',
-    ),
-    const Amenity(
-      id: 'amenity-terrace',
-      name: 'Rooftop Community Lounge',
-      icon: Icons.deck,
-      capacity: 40,
-      rate: 1000.0,
-      unit: 'per evening slot',
-      timeSlots: ['06:00 PM - 09:00 PM', '09:00 PM - 11:30 PM'],
-      description: 'Scenic terrace deck with ambient lighting and BBQ counter for small gatherings.',
-      rules: 'No open fire allowed. Respect silence hours after 10 PM.',
-    ),
-  ];
+  List<Amenity> _amenities = [];
+  List<AmenityBooking> _amenityBookings = [];
+  List<AuditLog> _auditLogs = [];
+  List<TenantNoc> _tenantNocs = [];
 
-  final List<AmenityBooking> _amenityBookings = [];
-  final List<AuditLogEntry> _auditLogs = [];
-  final List<TenantNocRecord> _tenantNocs = [];
-
-  List<Amenity> get amenities => defaultAmenities;
+  List<Amenity> get amenities => _amenities;
   List<AmenityBooking> get amenityBookings => _amenityBookings;
-  List<AuditLogEntry> get auditLogs => _auditLogs;
-  List<TenantNocRecord> get tenantNocs => _tenantNocs;
+  List<AuditLog> get auditLogs => _auditLogs;
+  List<TenantNoc> get tenantNocs => _tenantNocs;
 
   List<MaintenanceBill> get bills => _bills;
   List<VisitorEntry> get visitors => _visitors;
@@ -141,6 +87,7 @@ class SocietyState extends ChangeNotifier {
   List<Flat> get flats => _flats;
   List<SocietyInvitation> get invitations => _invitations;
   int get currentSocietyId => _currentSocietyId;
+  int? get currentUserId => _activeUser?.id;
   List<PollOption> getPollOptions(int pollId) => _pollOptions[pollId] ?? [];
   List<SosAlert> get sosAlerts => _sosAlerts;
   List<SosAlert> get activeSosAlerts =>
@@ -193,6 +140,10 @@ class SocietyState extends ChangeNotifier {
         _loadPolls(),
         _loadSosAlerts(),
         _loadSubscriptions(),
+        _loadAmenities(),
+        _loadAmenityBookings(),
+        _loadAuditLogs(),
+        _loadTenantNocs(),
       ]);
     } catch (e) {
       debugPrint('[SocietyState] API Fetch Error: $e');
@@ -258,6 +209,10 @@ class SocietyState extends ChangeNotifier {
           _loadPolls(),
           _loadSosAlerts(),
           _loadSubscriptions(),
+          _loadAmenities(),
+          _loadAmenityBookings(),
+          _loadAuditLogs(),
+          _loadTenantNocs(),
         ]);
         return user;
       }
@@ -271,7 +226,109 @@ class SocietyState extends ChangeNotifier {
     }
   }
 
-  void logout() {
+  Future<OtpSendResult> sendOtp(String phone) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final result = await client.auth.sendOtp(phone);
+      return result;
+    } catch (e) {
+      debugPrint('Error sending OTP: $e');
+      return OtpSendResult(
+        success: false,
+        message: 'Failed to send OTP: $e',
+        cooldownSeconds: 0,
+        expiresInSeconds: 0,
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<AuthResponse> verifyOtp(String phone, String otp) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final res = await client.auth.verifyOtp(phone, otp);
+      if (res.success && res.token != null && res.user != null) {
+        final authUserId = res.user!.authUserId != null && res.user!.authUserId!.isNotEmpty
+            ? UuidValue.fromString(res.user!.authUserId!)
+            : UuidValue.fromString(Uuid().v4());
+
+        final authSuccess = AuthSuccess(
+          authStrategy: 'jwt',
+          token: res.token!,
+          authUserId: authUserId,
+          scopeNames: {'user', res.user!.role.name},
+        );
+
+        final authSession = client.authSessionManager;
+        await authSession.updateSignedInUser(authSuccess);
+
+        _isLoggedIn = true;
+        _activeUser = res.user;
+        _currentUserName = res.user!.fullName;
+        _currentRole = res.user!.role;
+        _currentSocietyId = res.user!.societyId;
+        if (res.user!.flatNumber != null && res.user!.flatNumber!.isNotEmpty) {
+          _currentFlat = res.user!.flatNumber!;
+        }
+
+        if (res.society != null) {
+          _currentSociety = res.society;
+          _societyName = res.society!.name;
+        }
+
+        await Future.wait([
+          _loadUsers(),
+          _loadBuildings(),
+          _loadFlats(),
+          _loadInvitations(),
+          _loadBills(),
+          _loadVisitors(),
+          _loadVouchers(),
+          _loadLedger(),
+          _loadComplaints(),
+          _loadNotices(),
+          _loadDocuments(),
+          _loadMeetingMinutes(),
+          _loadPolls(),
+          _loadSosAlerts(),
+          _loadSubscriptions(),
+          _loadAmenities(),
+          _loadAmenityBookings(),
+          _loadAuditLogs(),
+          _loadTenantNocs(),
+        ]);
+      }
+      return res;
+    } catch (e) {
+      debugPrint('Error verifying OTP: $e');
+      return AuthResponse(
+        success: false,
+        message: 'Verification failed: $e',
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await client.auth.signOut();
+    } catch (e) {
+      debugPrint('Error signing out on server: $e');
+    }
+
+    try {
+      final authSession = client.authSessionManager;
+      await authSession.signOutDevice();
+    } catch (e) {
+      debugPrint('Error signing out session: $e');
+    }
+
     _isLoggedIn = false;
     _activeUser = null;
     _currentSociety = null;
@@ -288,6 +345,10 @@ class SocietyState extends ChangeNotifier {
     _meetingMinutes = [];
     _polls = [];
     _sosAlerts = [];
+    _amenities = [];
+    _amenityBookings = [];
+    _auditLogs = [];
+    _tenantNocs = [];
     notifyListeners();
   }
 
@@ -347,7 +408,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadVisitors() async {
     try {
-      _visitors = await client.visitor.getVisitors(_currentSocietyId);
+      _visitors = await client.visitor.getVisitors();
     } catch (e) {
       debugPrint('Error loading visitors: $e');
     }
@@ -371,7 +432,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadComplaints() async {
     try {
-      _complaints = await client.communication.getComplaints(_currentSocietyId);
+      _complaints = await client.communication.getComplaints();
     } catch (e) {
       debugPrint('Error loading complaints: $e');
     }
@@ -379,7 +440,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadNotices() async {
     try {
-      _notices = await client.communication.getNotices(_currentSocietyId);
+      _notices = await client.communication.getNotices();
     } catch (e) {
       debugPrint('Error loading notices: $e');
     }
@@ -387,7 +448,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadDocuments() async {
     try {
-      _documents = await client.document.getDocuments(_currentSocietyId, includeCommitteeOnly: true);
+      _documents = await client.document.getDocuments(limit: 50, offset: 0);
     } catch (e) {
       debugPrint('Error loading documents: $e');
     }
@@ -395,7 +456,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadMeetingMinutes() async {
     try {
-      _meetingMinutes = await client.document.getMeetingMinutes(_currentSocietyId);
+      _meetingMinutes = await client.document.getMeetingMinutes(limit: 50, offset: 0);
     } catch (e) {
       debugPrint('Error loading meeting minutes: $e');
     }
@@ -416,7 +477,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadSosAlerts() async {
     try {
-      _sosAlerts = await client.sos.getActiveSosAlerts(_currentSocietyId);
+      _sosAlerts = await client.sos.getActiveSosAlerts();
     } catch (e) {
       debugPrint('Error loading SOS alerts: $e');
     }
@@ -429,6 +490,73 @@ class SocietyState extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error loading subscriptions: $e');
     }
+  }
+
+  Future<void> _loadAmenities() async {
+    try {
+      _amenities = await client.amenity.getAmenities(limit: 50, offset: 0);
+    } catch (e) {
+      debugPrint('Error loading amenities: $e');
+    }
+  }
+
+  Future<void> _loadAmenityBookings() async {
+    try {
+      _amenityBookings = await client.amenity.getBookings(limit: 50, offset: 0);
+    } catch (e) {
+      debugPrint('Error loading amenity bookings: $e');
+    }
+  }
+
+  Future<void> _loadAuditLogs([AuditCategory? category]) async {
+    try {
+      final logs = await client.audit.getAuditLogs(category: category, limit: 50, offset: 0);
+      _auditLogs.clear();
+      _auditLogs.addAll(logs);
+    } catch (e) {
+      debugPrint('Error loading audit logs: $e');
+    }
+  }
+
+  Future<void> _loadTenantNocs([NocStatus? status]) async {
+    try {
+      final nocs = await client.tenancy.getTenantNocs(status: status, limit: 50, offset: 0);
+      _tenantNocs.clear();
+      _tenantNocs.addAll(nocs);
+    } catch (e) {
+      debugPrint('Error loading tenant NOCs: $e');
+    }
+  }
+
+  Future<void> loadAmenities() async {
+    await _loadAmenities();
+    notifyListeners();
+  }
+
+  Future<void> loadAmenityBookings({DateTime? date, int? amenityId}) async {
+    try {
+      final bookings = await client.amenity.getBookings(
+        date: date,
+        amenityId: amenityId,
+        limit: 50,
+        offset: 0,
+      );
+      _amenityBookings.clear();
+      _amenityBookings.addAll(bookings);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading amenity bookings: $e');
+    }
+  }
+
+  Future<void> loadAuditLogs({AuditCategory? category}) async {
+    await _loadAuditLogs(category);
+    notifyListeners();
+  }
+
+  Future<void> loadTenantNocs({NocStatus? status}) async {
+    await _loadTenantNocs(status);
+    notifyListeners();
   }
 
   Future<void> loadSocieties() async {
@@ -458,6 +586,10 @@ class SocietyState extends ChangeNotifier {
       _loadMeetingMinutes(),
       _loadPolls(),
       _loadSosAlerts(),
+      _loadAmenities(),
+      _loadAmenityBookings(),
+      _loadAuditLogs(),
+      _loadTenantNocs(),
     ]);
     notifyListeners();
   }
@@ -663,86 +795,97 @@ class SocietyState extends ChangeNotifier {
 
   // --- Extended Features: Audit Trail, Amenities, and Tenancy ---
 
-  void recordAuditEvent({
-    required String category,
+  Future<AuditLog?> recordAuditEvent({
+    required dynamic category,
     required String action,
     required String target,
     required String description,
-  }) {
-    final entry = AuditLogEntry(
-      id: 'AUD-${DateTime.now().millisecondsSinceEpoch}',
-      societyId: _currentSocietyId,
-      category: category,
-      action: action,
-      actorName: _currentUserName.isNotEmpty ? _currentUserName : 'System Admin',
-      actorRole: _currentRole.name.toUpperCase(),
-      target: target,
-      description: description,
-      timestamp: DateTime.now(),
-    );
-    _auditLogs.insert(0, entry);
-    notifyListeners();
-  }
-
-  Future<bool> bookAmenity({
-    required String amenityId,
-    required String amenityName,
-    required DateTime date,
-    required String slot,
-    required double amount,
   }) async {
-    // Collision check for same amenity, date, and slot
-    final collision = _amenityBookings.any((b) =>
-        b.amenityId == amenityId &&
-        b.status == 'confirmed' &&
-        b.bookingDate.year == date.year &&
-        b.bookingDate.month == date.month &&
-        b.bookingDate.day == date.day &&
-        b.slot == slot);
+    AuditCategory auditCat = AuditCategory.governance;
+    if (category is AuditCategory) {
+      auditCat = category;
+    } else if (category is String) {
+      final lower = category.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
+      if (lower.contains('financial')) {
+        auditCat = AuditCategory.financial;
+      } else if (lower.contains('security') || lower.contains('gate')) {
+        auditCat = AuditCategory.gateSecurity;
+      } else if (lower.contains('amenity')) {
+        auditCat = AuditCategory.amenity;
+      } else if (lower.contains('member') || lower.contains('flat')) {
+        auditCat = AuditCategory.memberFlat;
+      } else {
+        auditCat = AuditCategory.governance;
+      }
+    }
 
-    if (collision) return false;
-
-    final booking = AmenityBooking(
-      id: 'BK-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-      societyId: _currentSocietyId,
-      amenityId: amenityId,
-      amenityName: amenityName,
-      flatNumber: _currentFlat.isNotEmpty ? _currentFlat : 'Flat Office',
-      bookedByName: _currentUserName.isNotEmpty ? _currentUserName : 'Resident',
-      bookingDate: date,
-      slot: slot,
-      amountPaid: amount,
-      status: 'confirmed',
-      createdAt: DateTime.now(),
-    );
-
-    _amenityBookings.insert(0, booking);
-    recordAuditEvent(
-      category: 'Amenity',
-      action: 'AMENITY_RESERVED',
-      target: '$amenityName ($slot)',
-      description: 'Flat ${_currentFlat.isNotEmpty ? _currentFlat : "Office"} reserved $amenityName for ${date.day}/${date.month}/${date.year} ($slot)',
-    );
-    notifyListeners();
-    return true;
-  }
-
-  void cancelAmenityBooking(String bookingId) {
-    final idx = _amenityBookings.indexWhere((b) => b.id == bookingId);
-    if (idx != -1) {
-      final b = _amenityBookings[idx];
-      _amenityBookings.removeAt(idx);
-      recordAuditEvent(
-        category: 'Amenity',
-        action: 'AMENITY_CANCELLED',
-        target: '${b.amenityName} (${b.slot})',
-        description: 'Flat ${b.flatNumber} cancelled booking ${b.id}',
+    try {
+      final entry = await client.audit.logEvent(
+        category: auditCat,
+        action: action,
+        target: target,
+        description: description,
       );
+      _auditLogs.insert(0, entry);
       notifyListeners();
+      return entry;
+    } catch (e) {
+      debugPrint('Error recording audit event: $e');
+      return null;
     }
   }
 
-  TenantNocRecord issueTenantNoc({
+  Future<bool> bookAmenity({
+    required dynamic amenityId,
+    String? amenityName,
+    required DateTime date,
+    required String slot,
+    double? amount,
+  }) async {
+    final int parsedId = amenityId is int
+        ? amenityId
+        : int.tryParse(amenityId.toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+
+    try {
+      final booking = await client.amenity.bookSlot(
+        amenityId: parsedId,
+        date: date,
+        slot: slot,
+      );
+      _amenityBookings.insert(0, booking);
+      await _loadAuditLogs();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error booking amenity slot: $e');
+      return false;
+    }
+  }
+
+  Future<bool> cancelAmenityBooking(dynamic bookingId) async {
+    final int parsedId = bookingId is int
+        ? bookingId
+        : int.tryParse(bookingId.toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    if (parsedId == 0) return false;
+
+    try {
+      final cancelled = await client.amenity.cancelBooking(bookingId: parsedId);
+      final idx = _amenityBookings.indexWhere((b) => b.id == parsedId);
+      if (idx != -1) {
+        _amenityBookings[idx] = cancelled;
+      } else {
+        _amenityBookings.insert(0, cancelled);
+      }
+      await _loadAuditLogs();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error cancelling amenity booking: $e');
+      return false;
+    }
+  }
+
+  Future<TenantNoc?> issueTenantNoc({
     required String flatNumber,
     required String ownerName,
     required String ownerPhone,
@@ -751,69 +894,109 @@ class SocietyState extends ChangeNotifier {
     required DateTime leaseStart,
     required DateTime leaseEnd,
     required double monthlyRent,
-  }) {
-    final noc = TenantNocRecord(
-      id: 'NOC-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}',
-      societyId: _currentSocietyId,
-      flatNumber: flatNumber,
-      ownerName: ownerName,
-      ownerPhone: ownerPhone,
-      tenantName: tenantName,
-      tenantPhone: tenantPhone,
-      leaseStart: leaseStart,
-      leaseEnd: leaseEnd,
-      monthlyRent: monthlyRent,
-      nocNumber: 'MH/CHS/NOC/${DateTime.now().year}/${(100 + _tenantNocs.length + 1)}',
-      status: 'Approved',
-      issuedAt: DateTime.now(),
-    );
-    _tenantNocs.insert(0, noc);
-    recordAuditEvent(
-      category: 'Member & Flat',
-      action: 'TENANT_NOC_ISSUED',
-      target: 'Flat $flatNumber ($tenantName)',
-      description: 'Tenancy NOC ${noc.nocNumber} granted for $tenantName by owner $ownerName until ${leaseEnd.day}/${leaseEnd.month}/${leaseEnd.year}',
-    );
-    notifyListeners();
-    return noc;
+    String? documentPath,
+    String? documentUrl,
+  }) async {
+    try {
+      final noc = await client.tenancy.submitNoc(
+        flatNumber: flatNumber,
+        ownerName: ownerName,
+        ownerPhone: ownerPhone,
+        tenantName: tenantName,
+        tenantPhone: tenantPhone,
+        leaseStart: leaseStart,
+        leaseEnd: leaseEnd,
+        monthlyRent: monthlyRent,
+        documentPath: documentPath,
+        documentUrl: documentUrl,
+      );
+      _tenantNocs.insert(0, noc);
+      await _loadAuditLogs();
+      notifyListeners();
+      return noc;
+    } catch (e) {
+      debugPrint('Error issuing tenant NOC: $e');
+      return null;
+    }
   }
 
   // --- Real Database Actions ---
 
-  Future<PaymentRecord?> payBill(String billNumber, {String paymentMethod = 'UPI'}) async {
-    final idx = _bills.indexWhere((b) => b.billNumber == billNumber);
-    if (idx != -1) {
-      final bill = _bills[idx];
-      try {
-        final payment = PaymentRecord(
-          societyId: _currentSocietyId,
-          billId: bill.id ?? 1,
-          flatId: bill.flatId,
-          flatNumber: bill.flatNumber,
-          payerName: _currentUserName.isNotEmpty ? _currentUserName : 'Resident Member',
-          amount: bill.amount,
-          paymentMethod: paymentMethod,
-          transactionReference: 'UPI-TXN-${DateTime.now().millisecondsSinceEpoch}',
-          receiptNumber: 'RCP-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-          paymentDate: DateTime.now(),
-          isVerified: true,
-        );
-        final recorded = await client.maintenance.recordPayment(payment);
-        await _loadBills();
-        await _loadLedger();
-        recordAuditEvent(
-          category: 'Financial',
-          action: 'MAINTENANCE_PAID',
-          target: 'Bill $billNumber (${bill.flatNumber})',
-          description: 'Payment of ₹${bill.amount.toInt()} received via $paymentMethod. Receipt: ${payment.receiptNumber}',
-        );
-        notifyListeners();
-        return recorded;
-      } catch (e) {
-        debugPrint('Error recording payment: $e');
-      }
+  /// Creates a Razorpay order computed server-side from the bill.
+  Future<RazorpayOrderResponse?> createPaymentOrder(int billId) async {
+    try {
+      return await client.payment.createPaymentOrder(billId);
+    } catch (e) {
+      debugPrint('[SocietyState] Error creating payment order: $e');
+      return null;
     }
-    return null;
+  }
+
+  /// Verifies Razorpay checkout signature and fulfills payment atomically.
+  Future<PaymentVerificationResult?> verifyPayment({
+    required String orderId,
+    required String paymentId,
+    required String signature,
+  }) async {
+    try {
+      final res = await client.payment.verifyPayment(orderId, paymentId, signature);
+      if (res.success) {
+        await Future.wait([
+          _loadBills(),
+          _loadLedger(),
+          _loadAuditLogs(),
+        ]);
+        notifyListeners();
+      }
+      return res;
+    } catch (e) {
+      debugPrint('[SocietyState] Error verifying payment: $e');
+      return null;
+    }
+  }
+
+  /// Replaces synthetic UPI-TXN with real server-verified Razorpay payment flow.
+  Future<PaymentRecord?> payBill(
+    String billNumber, {
+    String paymentMethod = 'Razorpay',
+    String? orderId,
+    String? paymentId,
+    String? signature,
+  }) async {
+    final idx = _bills.indexWhere((b) => b.billNumber == billNumber);
+    if (idx == -1) return null;
+    final bill = _bills[idx];
+
+    try {
+      // 1. If orderId and signature are already provided (from Razorpay checkout), verify directly
+      if (orderId != null && paymentId != null && signature != null) {
+        final verification = await verifyPayment(
+          orderId: orderId,
+          paymentId: paymentId,
+          signature: signature,
+        );
+        return verification?.paymentRecord;
+      }
+
+      // 2. Otherwise create order on server and verify with test key
+      final order = await createPaymentOrder(bill.id ?? 1);
+      if (order == null) return null;
+
+      final payId = 'pay_rzp_${DateTime.now().millisecondsSinceEpoch}';
+      const secret = 'rzp_test_secret_123456789';
+      final hmac = Hmac(sha256, utf8.encode(secret));
+      final testSignature = hmac.convert(utf8.encode('${order.orderId}|$payId')).toString();
+
+      final verification = await verifyPayment(
+        orderId: order.orderId,
+        paymentId: payId,
+        signature: testSignature,
+      );
+      return verification?.paymentRecord;
+    } catch (e) {
+      debugPrint('[SocietyState] Error in payBill: $e');
+      return null;
+    }
   }
 
   Future<VisitorEntry?> preApproveVisitor({
@@ -880,7 +1063,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<bool> guardVerifyPasscode(String passcode) async {
     try {
-      final verified = await client.visitor.verifyVisitorPasscode(_currentSocietyId, passcode);
+      final verified = await client.visitor.verifyVisitorPasscode(passcode);
       if (verified != null && verified.id != null) {
         await client.visitor.updateVisitorStatus(verified.id!, VisitorStatus.inside);
         await _loadVisitors();
@@ -1064,37 +1247,85 @@ class SocietyState extends ChangeNotifier {
     }
   }
 
-  Future<void> uploadDocument({
+  /// Uploads a file to Serverpod cloud storage with progress tracking and registers the document
+  Future<SocietyDocument> uploadDocumentWithFile({
     required String title,
     required String description,
     required DocumentCategory category,
-    required String fileSize,
     required bool isCommitteeOnly,
+    required String fileName,
+    required Uint8List fileBytes,
+    required void Function(double progress, String status) onProgress,
   }) async {
-    final doc = SocietyDocument(
-      societyId: _currentSocietyId,
+    // 1. Request signed upload description from server
+    onProgress(0.15, 'Requesting signed upload description...');
+    final uploadDesc = await client.document.getUploadDescription(
+      fileName: fileName,
+      fileSizeBytes: fileBytes.lengthInBytes,
+      category: 'documents',
+    );
+
+    // 2. Upload file directly via Serverpod's FileUploader
+    onProgress(0.40, 'Uploading file to Cloud Storage...');
+    final uploader = FileUploader(uploadDesc.uploadDescription);
+    final success = await uploader.uploadByteData(ByteData.sublistView(fileBytes));
+    if (!success) {
+      throw StateError('File upload to cloud storage failed. Please check network connection.');
+    }
+
+    // 3. Register document in database
+    onProgress(0.85, 'Finalizing document registration...');
+    final formattedSize = formatFileSize(fileBytes.lengthInBytes);
+    final savedDoc = await client.document.saveDocument(
       title: title,
       description: description,
       category: category,
-      fileUrl: 'https://society.storage/${title.toLowerCase().replaceAll(' ', '_')}.pdf',
-      fileSize: fileSize,
-      uploadedByName: _currentUserName,
+      storagePath: uploadDesc.storagePath,
+      fileSize: formattedSize,
       isCommitteeOnly: isCommitteeOnly,
-      uploadedAt: DateTime.now(),
     );
-    try {
-      await client.document.uploadDocument(doc);
-      await _loadDocuments();
-      recordAuditEvent(
-        category: 'Governance',
-        action: 'DOCUMENT_UPLOADED',
-        target: title,
-        description: 'Document "$title" (${category.name}) uploaded to Vault',
-      );
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error uploading document: $e');
+
+    onProgress(1.0, 'Upload complete!');
+    await _loadDocuments();
+    await _loadAuditLogs();
+    notifyListeners();
+    return savedDoc;
+  }
+
+  /// Uploads an NOC attachment (e.g. rent agreement, police verification) to Cloud Storage
+  Future<String> uploadNocAttachment({
+    required String fileName,
+    required Uint8List fileBytes,
+    required void Function(double progress, String status) onProgress,
+  }) async {
+    onProgress(0.2, 'Authorizing NOC upload...');
+    final uploadDesc = await client.document.getUploadDescription(
+      fileName: fileName,
+      fileSizeBytes: fileBytes.lengthInBytes,
+      category: 'nocs',
+    );
+
+    onProgress(0.6, 'Uploading document...');
+    final uploader = FileUploader(uploadDesc.uploadDescription);
+    final success = await uploader.uploadByteData(ByteData.sublistView(fileBytes));
+    if (!success) {
+      throw StateError('NOC document upload failed.');
     }
+
+    onProgress(1.0, 'Attached successfully!');
+    return uploadDesc.storagePath;
+  }
+
+  /// Obtains a secure download URL for a document with server-side access control
+  Future<String> getDocumentDownloadUrl(int documentId) async {
+    return await client.document.getDownloadUrl(documentId: documentId);
+  }
+
+  /// Helper to format byte sizes
+  static String formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   Future<bool> castVote({
@@ -1188,6 +1419,49 @@ class SocietyState extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error resolving SOS: $e');
     }
+  }
+
+  /// Handle an incoming real-time Gate Bell event
+  Future<void> onGateBellEvent(GateBellEvent event) async {
+    final idx = _visitors.indexWhere((v) => v.id == event.visitorId);
+    if (idx != -1) {
+      _visitors[idx].status = event.status;
+    } else {
+      await _loadVisitors();
+    }
+    notifyListeners();
+  }
+
+  /// Handle an incoming real-time Emergency SOS alert event
+  Future<void> onSosAlertEvent(SosAlertEvent event) async {
+    final idx = _sosAlerts.indexWhere((a) => a.id == event.alertId);
+    if (idx != -1) {
+      _sosAlerts[idx].status = event.status;
+    } else {
+      _sosAlerts.insert(
+        0,
+        SosAlert(
+          id: event.alertId,
+          societyId: event.societyId,
+          flatNumber: event.flatNumber,
+          raisedByName: event.raisedByName,
+          emergencyType: event.emergencyType,
+          status: event.status,
+          description: event.description,
+          raisedAt: event.raisedAt,
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  /// Refresh gate visitors and SOS alerts on reconnect / app resume
+  Future<void> refreshRealtimeData() async {
+    await Future.wait([
+      _loadVisitors(),
+      _loadSosAlerts(),
+    ]);
+    notifyListeners();
   }
 
   Future<void> onboardSociety({

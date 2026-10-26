@@ -1,9 +1,13 @@
 import 'package:serverpod/serverpod.dart';
+import '../core/auth_context.dart';
 import '../generated/protocol.dart';
 
 class SaasAdminEndpoint extends Endpoint {
-  /// Fetch high-level SaaS platform metrics
+  /// Fetch high-level SaaS platform metrics (Platform Super Admin only)
   Future<SaasMetricSummary> getMetricSummary(Session session) async {
+    final auth = await AuthContext.require(session);
+    auth.requireRole({UserRole.admin});
+
     final subscriptions = await SocietySubscription.db.find(session);
 
     int totalSocieties = subscriptions.length;
@@ -29,8 +33,11 @@ class SaasAdminEndpoint extends Endpoint {
     );
   }
 
-  /// List all client society subscriptions
+  /// List all client society subscriptions (Platform Super Admin only)
   Future<List<SocietySubscription>> getAllSubscriptions(Session session) async {
+    final auth = await AuthContext.require(session);
+    auth.requireRole({UserRole.admin});
+
     return await SocietySubscription.db.find(
       session,
       orderBy: (t) => t.createdAt,
@@ -38,20 +45,26 @@ class SaasAdminEndpoint extends Endpoint {
     );
   }
 
-  /// Register new society subscription
+  /// Register new society subscription (Platform Super Admin only)
   Future<SocietySubscription> createSubscription(
     Session session,
     SocietySubscription sub,
   ) async {
+    final auth = await AuthContext.require(session);
+    auth.requireRole({UserRole.admin});
+
     return await SocietySubscription.db.insertRow(session, sub);
   }
 
-  /// Update subscription status (active, past_due, suspended)
+  /// Update subscription status (Platform Super Admin only)
   Future<SocietySubscription?> updateSubscriptionStatus(
     Session session,
     int subscriptionId,
     String status,
   ) async {
+    final auth = await AuthContext.require(session);
+    auth.requireRole({UserRole.admin});
+
     final sub = await SocietySubscription.db.findById(session, subscriptionId);
     if (sub == null) return null;
 

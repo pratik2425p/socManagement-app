@@ -5,8 +5,12 @@ fields:
   title: String
   description: String
   category: DocumentCategory
+  storagePath: String?
   fileUrl: String
   fileSize: String
   uploadedByName: String
   isCommitteeOnly: bool
   uploadedAt: DateTime
+indexes:
+  society_document_society_idx:
+    fields: societyId

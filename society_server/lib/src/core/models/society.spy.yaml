@@ -11,4 +11,6 @@ fields:
   subscriptionPlan: String
   subscriptionStatus: String
   complexId: int?
+  registrationNumber: String?
+  gstin: String?
   createdAt: DateTime

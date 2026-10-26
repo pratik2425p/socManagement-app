@@ -21,6 +21,7 @@ abstract class SocietyDocument
     required this.title,
     required this.description,
     required this.category,
+    this.storagePath,
     required this.fileUrl,
     required this.fileSize,
     required this.uploadedByName,
@@ -34,6 +35,7 @@ abstract class SocietyDocument
     required String title,
     required String description,
     required _i2.DocumentCategory category,
+    String? storagePath,
     required String fileUrl,
     required String fileSize,
     required String uploadedByName,
@@ -50,6 +52,7 @@ abstract class SocietyDocument
       category: _i2.DocumentCategory.fromJson(
         (jsonSerialization['category'] as String),
       ),
+      storagePath: jsonSerialization['storagePath'] as String?,
       fileUrl: jsonSerialization['fileUrl'] as String,
       fileSize: jsonSerialization['fileSize'] as String,
       uploadedByName: jsonSerialization['uploadedByName'] as String,
@@ -77,6 +80,8 @@ abstract class SocietyDocument
 
   _i2.DocumentCategory category;
 
+  String? storagePath;
+
   String fileUrl;
 
   String fileSize;
@@ -99,6 +104,7 @@ abstract class SocietyDocument
     String? title,
     String? description,
     _i2.DocumentCategory? category,
+    String? storagePath,
     String? fileUrl,
     String? fileSize,
     String? uploadedByName,
@@ -114,6 +120,7 @@ abstract class SocietyDocument
       'title': title,
       'description': description,
       'category': category.toJson(),
+      if (storagePath != null) 'storagePath': storagePath,
       'fileUrl': fileUrl,
       'fileSize': fileSize,
       'uploadedByName': uploadedByName,
@@ -131,6 +138,7 @@ abstract class SocietyDocument
       'title': title,
       'description': description,
       'category': category.toJson(),
+      if (storagePath != null) 'storagePath': storagePath,
       'fileUrl': fileUrl,
       'fileSize': fileSize,
       'uploadedByName': uploadedByName,
@@ -178,6 +186,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
     required String title,
     required String description,
     required _i2.DocumentCategory category,
+    String? storagePath,
     required String fileUrl,
     required String fileSize,
     required String uploadedByName,
@@ -189,6 +198,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
          title: title,
          description: description,
          category: category,
+         storagePath: storagePath,
          fileUrl: fileUrl,
          fileSize: fileSize,
          uploadedByName: uploadedByName,
@@ -206,6 +216,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
     String? title,
     String? description,
     _i2.DocumentCategory? category,
+    Object? storagePath = _Undefined,
     String? fileUrl,
     String? fileSize,
     String? uploadedByName,
@@ -218,6 +229,7 @@ class _SocietyDocumentImpl extends SocietyDocument {
       title: title ?? this.title,
       description: description ?? this.description,
       category: category ?? this.category,
+      storagePath: storagePath is String? ? storagePath : this.storagePath,
       fileUrl: fileUrl ?? this.fileUrl,
       fileSize: fileSize ?? this.fileSize,
       uploadedByName: uploadedByName ?? this.uploadedByName,
@@ -249,6 +261,11 @@ class SocietyDocumentUpdateTable extends _i1.UpdateTable<SocietyDocumentTable> {
     _i2.DocumentCategory value,
   ) => _i1.ColumnValue(
     table.category,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> storagePath(String? value) => _i1.ColumnValue(
+    table.storagePath,
     value,
   );
 
@@ -301,6 +318,10 @@ class SocietyDocumentTable extends _i1.Table<int?> {
       this,
       _i1.EnumSerialization.byName,
     );
+    storagePath = _i1.ColumnString(
+      'storagePath',
+      this,
+    );
     fileUrl = _i1.ColumnString(
       'fileUrl',
       this,
@@ -333,6 +354,8 @@ class SocietyDocumentTable extends _i1.Table<int?> {
 
   late final _i1.ColumnEnum<_i2.DocumentCategory> category;
 
+  late final _i1.ColumnString storagePath;
+
   late final _i1.ColumnString fileUrl;
 
   late final _i1.ColumnString fileSize;
@@ -350,6 +373,7 @@ class SocietyDocumentTable extends _i1.Table<int?> {
     title,
     description,
     category,
+    storagePath,
     fileUrl,
     fileSize,
     uploadedByName,

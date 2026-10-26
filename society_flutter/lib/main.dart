@@ -3,6 +3,8 @@ import 'package:society_client/society_client.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
+import 'core/utils/navigation_service.dart';
+import 'services/realtime_service.dart';
 import 'theme/app_theme.dart';
 import 'services/society_state.dart';
 import 'screens/home_screen.dart';
@@ -11,6 +13,7 @@ import 'screens/polling/polling_screen.dart';
 
 late final Client client;
 late final SocietyState globalSocietyState;
+late final RealtimeService realtimeService;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +24,11 @@ void main() async {
     ..connectivityMonitor = FlutterConnectivityMonitor()
     ..authSessionManager = FlutterAuthSessionManager();
 
-  client.auth.initialize();
-
   globalSocietyState = SocietyState(client: client);
+  realtimeService = RealtimeService(
+    client: client,
+    state: globalSocietyState,
+  )..init();
 
   runApp(const SocietyApp());
 }
@@ -34,6 +39,7 @@ class SocietyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NavigationService.navigatorKey,
       title: 'Society Management SaaS',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

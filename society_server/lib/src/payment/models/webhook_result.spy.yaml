@@ -1,0 +1,7 @@
+class: WebhookResult
+fields:
+  success: bool
+  message: String
+  isProcessed: bool
+  orderId: String?
+  paymentId: String?

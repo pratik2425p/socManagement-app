@@ -1,0 +1,7 @@
+enum: AuditCategory
+values:
+  - financial
+  - gateSecurity
+  - governance
+  - memberFlat
+  - amenity

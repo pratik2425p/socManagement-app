@@ -1,0 +1,6 @@
+class: OtpSendResult
+fields:
+  success: bool
+  message: String
+  cooldownSeconds: int
+  expiresInSeconds: int

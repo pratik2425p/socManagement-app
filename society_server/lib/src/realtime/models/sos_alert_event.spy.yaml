@@ -1,0 +1,10 @@
+class: SosAlertEvent
+fields:
+  alertId: int
+  societyId: int
+  flatNumber: String
+  raisedByName: String
+  emergencyType: EmergencyType
+  status: SosStatus
+  description: String?
+  raisedAt: DateTime

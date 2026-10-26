@@ -1,0 +1,12 @@
+class: GateBellEvent
+fields:
+  visitorId: int
+  societyId: int
+  flatNumber: String
+  visitorName: String
+  visitorPhone: String
+  purpose: String
+  vehicleNumber: String?
+  imageUrl: String?
+  status: VisitorStatus
+  createdAt: DateTime

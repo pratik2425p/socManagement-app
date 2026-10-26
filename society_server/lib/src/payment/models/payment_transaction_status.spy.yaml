@@ -1,0 +1,7 @@
+enum: PaymentTransactionStatus
+values:
+  - created
+  - authorized
+  - captured
+  - failed
+  - cancelled

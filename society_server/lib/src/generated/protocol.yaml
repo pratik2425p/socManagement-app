@@ -6,6 +6,18 @@ accounting:
   - postVoucherToLedger:
   - getLedgerEntries:
   - getLedgerAccounts:
+amenity:
+  - getAmenities:
+  - getBookings:
+  - bookSlot:
+  - cancelBooking:
+audit:
+  - getAuditLogs:
+  - logEvent:
+auth:
+  - sendOtp:
+  - verifyOtp:
+  - signOut:
 emailIdp:
   - login:
   - startRegistration:
@@ -42,7 +54,9 @@ society:
   - loginWithPhone:
 document:
   - getDocuments:
-  - uploadDocument:
+  - getUploadDescription:
+  - saveDocument:
+  - getDownloadUrl:
   - getMeetingMinutes:
   - recordMeetingMinutes:
 sos:
@@ -57,16 +71,31 @@ maintenance:
   - createBill:
   - recordPayment:
   - getPayments:
+notification:
+  - registerDeviceToken:
+  - unregisterDeviceToken:
+  - cleanupStaleTokens:
+payment:
+  - createPaymentOrder:
+  - verifyPayment:
+  - handleWebhook:
 poll:
   - getPolls:
   - getPollOptions:
   - createPoll:
   - castVote:
+realtime:
+  - streamGateBell:
+  - streamSosAlerts:
 saasAdmin:
   - getMetricSummary:
   - getAllSubscriptions:
   - createSubscription:
   - updateSubscriptionStatus:
+tenancy:
+  - getTenantNocs:
+  - submitNoc:
+  - resolveNoc:
 visitor:
   - getVisitors:
   - createVisitorEntry:

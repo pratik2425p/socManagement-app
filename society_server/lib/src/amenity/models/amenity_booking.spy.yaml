@@ -1,0 +1,20 @@
+class: AmenityBooking
+table: amenity_booking
+fields:
+  societyId: int
+  amenityId: int
+  amenityName: String
+  flatNumber: String
+  bookedById: int
+  bookedByName: String
+  bookingDate: DateTime
+  slot: String
+  amountPaid: double
+  status: BookingStatus
+  createdAt: DateTime
+indexes:
+  amenity_booking_society_idx:
+    fields: societyId
+  amenity_booking_unique_slot_idx:
+    fields: societyId, amenityId, bookingDate, slot
+    unique: true

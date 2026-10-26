@@ -1,0 +1,8 @@
+class: PushNotificationPayload
+fields:
+  title: String
+  body: String
+  highPriority: bool
+  data: Map<String, String>?
+  targetToken: String?
+  sentAt: DateTime

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../core/core.dart';
@@ -11,8 +12,8 @@ import 'widgets/role_selector_chips.dart';
 void showUserManagementSheet(BuildContext context, SocietyState state) {
   AppBottomSheet.show(
     context: context,
-    title: 'User Profiles & Roles',
-    subtitle: 'Manage and switch active personas in PostgreSQL',
+    title: 'User Profile & Community',
+    subtitle: kReleaseMode ? 'Account & Society Info' : 'Manage and switch active personas in PostgreSQL',
     isScrollControlled: true,
     child: _UserManagementContent(state: state),
   );
@@ -78,21 +79,23 @@ class _UserManagementContentState extends State<_UserManagementContent> {
         ),
         AppSpacing.vGapXl,
 
-        // 2. Quick Role Persona Switcher
-        RoleSelectorChips(
-          selectedRole: state.currentRole,
-          onRoleSelected: (role) => state.setRole(role),
-        ),
-        AppSpacing.vGapXl,
+        // 2. Dev-Only Persona Switcher (Hidden in Release Builds)
+        if (!kReleaseMode) ...[
+          RoleSelectorChips(
+            selectedRole: state.currentRole,
+            onRoleSelected: (role) => state.setRole(role),
+          ),
+          AppSpacing.vGapXl,
 
-        // 3. Action Buttons
-        AppButton.secondary(
-          label: 'Register Fresh User in PostgreSQL',
-          icon: Icons.person_add_alt_1_rounded,
-          isFullWidth: true,
-          onPressed: () => showCreateUserDialog(context, state),
-        ),
-        AppSpacing.vGapSm,
+          AppButton.secondary(
+            label: 'Register Fresh User in PostgreSQL',
+            icon: Icons.person_add_alt_1_rounded,
+            isFullWidth: true,
+            onPressed: () => showCreateUserDialog(context, state),
+          ),
+          AppSpacing.vGapSm,
+        ],
+
         AppButton.outline(
           label: 'Have Invitation Code? Accept & Join Flat',
           icon: Icons.vpn_key_rounded,
@@ -107,10 +110,10 @@ class _UserManagementContentState extends State<_UserManagementContent> {
         ),
         AppSpacing.vGapXl,
 
-        // 4. Registered Society Members List
+        // 3. Registered Society Members List (Persona Switch hidden in release)
         AppSectionHeader(
           title: 'Registered Society Users (${state.users.length})',
-          subtitle: 'Tap Switch to adopt any persona',
+          subtitle: kReleaseMode ? 'Directory members' : 'Tap Switch to adopt any persona (Dev only)',
           trailing: IconButton(
             icon: const Icon(Icons.refresh_rounded, size: 20),
             tooltip: 'Refresh users from server',
@@ -120,10 +123,10 @@ class _UserManagementContentState extends State<_UserManagementContent> {
         AppSpacing.vGapSm,
 
         if (state.users.isEmpty)
-          AppCard(
+          const AppCard(
             hasShadow: false,
             padding: AppSpacing.insetAllXl,
-            child: const Center(
+            child: Center(
               child: Text(
                 'No registered users found in database yet.',
                 style: TextStyle(fontSize: 13, color: Colors.grey),
@@ -185,7 +188,7 @@ class _UserManagementContentState extends State<_UserManagementContent> {
                   AppSpacing.hGapSm,
                   if (isActive)
                     const Icon(Icons.check_circle, color: AppColors.success, size: 22)
-                  else
+                  else if (!kReleaseMode)
                     AppButton.outline(
                       label: 'Switch',
                       height: 36,
@@ -203,6 +206,21 @@ class _UserManagementContentState extends State<_UserManagementContent> {
             );
           }),
         AppSpacing.vGapXl,
+
+        // 4. Sign Out & Revoke Session Button
+        AppButton.destructive(
+          label: 'Sign Out & Revoke Session',
+          icon: Icons.logout_rounded,
+          isFullWidth: true,
+          onPressed: () async {
+            Navigator.pop(context);
+            await state.logout();
+            if (context.mounted) {
+              AppSnackbar.showInfo(context, 'Successfully signed out.');
+            }
+          },
+        ),
+        AppSpacing.vGapLg,
       ],
     );
   }

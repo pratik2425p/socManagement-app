@@ -17,6 +17,7 @@ abstract class SocietyUser implements _i1.SerializableModel {
   SocietyUser._({
     this.id,
     required this.societyId,
+    this.authUserId,
     required this.fullName,
     required this.phone,
     required this.email,
@@ -29,6 +30,7 @@ abstract class SocietyUser implements _i1.SerializableModel {
   factory SocietyUser({
     int? id,
     required int societyId,
+    String? authUserId,
     required String fullName,
     required String phone,
     required String email,
@@ -42,6 +44,7 @@ abstract class SocietyUser implements _i1.SerializableModel {
     return SocietyUser(
       id: jsonSerialization['id'] as int?,
       societyId: jsonSerialization['societyId'] as int,
+      authUserId: jsonSerialization['authUserId'] as String?,
       fullName: jsonSerialization['fullName'] as String,
       phone: jsonSerialization['phone'] as String,
       email: jsonSerialization['email'] as String,
@@ -60,6 +63,8 @@ abstract class SocietyUser implements _i1.SerializableModel {
   int? id;
 
   int societyId;
+
+  String? authUserId;
 
   String fullName;
 
@@ -81,6 +86,7 @@ abstract class SocietyUser implements _i1.SerializableModel {
   SocietyUser copyWith({
     int? id,
     int? societyId,
+    String? authUserId,
     String? fullName,
     String? phone,
     String? email,
@@ -95,6 +101,7 @@ abstract class SocietyUser implements _i1.SerializableModel {
       '__className__': 'SocietyUser',
       if (id != null) 'id': id,
       'societyId': societyId,
+      if (authUserId != null) 'authUserId': authUserId,
       'fullName': fullName,
       'phone': phone,
       'email': email,
@@ -117,6 +124,7 @@ class _SocietyUserImpl extends SocietyUser {
   _SocietyUserImpl({
     int? id,
     required int societyId,
+    String? authUserId,
     required String fullName,
     required String phone,
     required String email,
@@ -127,6 +135,7 @@ class _SocietyUserImpl extends SocietyUser {
   }) : super._(
          id: id,
          societyId: societyId,
+         authUserId: authUserId,
          fullName: fullName,
          phone: phone,
          email: email,
@@ -143,6 +152,7 @@ class _SocietyUserImpl extends SocietyUser {
   SocietyUser copyWith({
     Object? id = _Undefined,
     int? societyId,
+    Object? authUserId = _Undefined,
     String? fullName,
     String? phone,
     String? email,
@@ -154,6 +164,7 @@ class _SocietyUserImpl extends SocietyUser {
     return SocietyUser(
       id: id is int? ? id : this.id,
       societyId: societyId ?? this.societyId,
+      authUserId: authUserId is String? ? authUserId : this.authUserId,
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
       email: email ?? this.email,

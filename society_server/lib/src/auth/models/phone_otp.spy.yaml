@@ -1,0 +1,17 @@
+class: PhoneOtp
+table: phone_otp
+fields:
+  phone: String
+  salt: String
+  otpHash: String
+  attempts: int
+  maxAttempts: int
+  expiresAt: DateTime
+  lastSentAt: DateTime
+  ipAddress: String?
+  isUsed: bool
+indexes:
+  phone_otp_phone_idx:
+    fields: phone
+  phone_otp_expires_idx:
+    fields: expiresAt

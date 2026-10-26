@@ -1,0 +1,24 @@
+class: TenantNoc
+table: tenant_noc
+fields:
+  societyId: int
+  flatNumber: String
+  ownerName: String
+  ownerPhone: String
+  tenantName: String
+  tenantPhone: String
+  leaseStart: DateTime
+  leaseEnd: DateTime
+  monthlyRent: double
+  nocNumber: String
+  status: NocStatus
+  resolutionNotes: String?
+  issuedAt: DateTime
+  resolvedAt: DateTime?
+  documentPath: String?
+  documentUrl: String?
+indexes:
+  tenant_noc_society_flat_idx:
+    fields: societyId, flatNumber
+  tenant_noc_society_status_idx:
+    fields: societyId, status

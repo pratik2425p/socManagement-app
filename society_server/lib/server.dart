@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
+import 'package:serverpod_cloud_storage_s3_compat/serverpod_cloud_storage_s3_compat.dart';
 
 import 'src/generated/endpoints.dart';
 import 'src/generated/protocol.dart';
+import 'src/payment/razorpay_webhook_route.dart';
 import 'src/seed.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/root.dart';
@@ -14,6 +16,33 @@ import 'src/web/routes/root.dart';
 void run(List<String> args) async {
   // Initialize Serverpod and connect it with your generated code.
   final pod = Serverpod(args, Protocol(), Endpoints());
+
+  // Configure S3-compatible cloud storage if credentials are provided in passwords.yaml
+  final s3Endpoint = pod.getPassword('s3Endpoint');
+  final s3Bucket = pod.getPassword('s3Bucket');
+  final s3Region = pod.getPassword('s3Region') ?? 'ap-south-1';
+  final s3AccessKey = pod.getPassword('s3AccessKeyId');
+  final s3SecretKey = pod.getPassword('s3SecretAccessKey');
+
+  if (s3Bucket != null &&
+      s3AccessKey != null &&
+      s3SecretKey != null &&
+      s3AccessKey.isNotEmpty &&
+      s3SecretKey.isNotEmpty) {
+    final endpointUri = Uri.parse(s3Endpoint ?? 'https://s3.$s3Region.amazonaws.com');
+    pod.addCloudStorage(
+      S3CompatCloudStorage(
+        storageId: 'public',
+        accessKey: s3AccessKey,
+        secretKey: s3SecretKey,
+        bucket: s3Bucket,
+        region: s3Region,
+        public: true,
+        endpoints: CustomEndpointConfig(baseUri: endpointUri),
+        uploadStrategy: PresignedPutUploadStrategy(),
+      ),
+    );
+  }
 
   // Initialize authentication services for the server.
   // Token managers will be used to validate and issue authentication keys,
@@ -41,6 +70,9 @@ void run(List<String> args) async {
   // These are used by the default web page.
   final root = Directory(Uri(path: 'web/static').toFilePath());
   pod.webServer.addRoute(StaticRoute.directory(root));
+
+  // Razorpay Webhook endpoint for server-side payment confirmation & auto-reconciliation
+  pod.webServer.addRoute(RazorpayWebhookRoute(), '/webhook/razorpay');
 
   // Setup the app config route.
   // We build this configuration based on the servers api url and serve it to

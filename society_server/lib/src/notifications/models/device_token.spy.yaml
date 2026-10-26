@@ -1,0 +1,15 @@
+class: DeviceToken
+table: device_token
+fields:
+  userId: int
+  societyId: int
+  deviceToken: String
+  platform: String
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  device_token_user_idx:
+    fields: userId
+  device_token_token_unique_idx:
+    fields: deviceToken
+    unique: true

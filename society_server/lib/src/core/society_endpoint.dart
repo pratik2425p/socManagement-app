@@ -82,7 +82,7 @@ class SocietyEndpoint extends Endpoint {
       status: 'active',
       createdAt: DateTime.now(),
     );
-    final createdUser = await SocietyUser.db.insertRow(session, adminUser);
+    await SocietyUser.db.insertRow(session, adminUser);
 
     // If flat is specified and not 'Admin Office', ensure Flat record exists in PostgreSQL!
     if (assignedFlat != 'Admin Office') {
@@ -95,8 +95,7 @@ class SocietyEndpoint extends Endpoint {
           session,
           where: (t) => t.societyId.equals(societyId),
         );
-        if (building == null) {
-          building = await Building.db.insertRow(
+        building ??= await Building.db.insertRow(
             session,
             Building(
               societyId: societyId,
@@ -105,7 +104,6 @@ class SocietyEndpoint extends Endpoint {
               createdAt: DateTime.now(),
             ),
           );
-        }
 
         final digits = int.tryParse(assignedFlat.replaceAll(RegExp(r'[^0-9]'), '')) ?? 101;
         await Flat.db.insertRow(
@@ -251,8 +249,13 @@ class SocietyEndpoint extends Endpoint {
     return await SocietyUser.db.insertRow(session, newUser);
   }
 
-  /// Login with phone number for Society Admin, Staff, or Resident
+  /// Dev-only direct phone login. Disabled in production.
   Future<SocietyUser?> loginWithPhone(Session session, String phone) async {
+    if (session.serverpod.runMode == 'production') {
+      throw StateError(
+        'Direct loginWithPhone is disabled in production. Use secure SMS OTP authentication.',
+      );
+    }
     final cleanPhone = phone.trim().replaceAll(RegExp(r'[^0-9]'), '');
     final users = await SocietyUser.db.find(
       session,

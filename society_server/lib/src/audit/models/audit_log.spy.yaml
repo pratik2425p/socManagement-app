@@ -1,0 +1,17 @@
+class: AuditLog
+table: audit_log
+fields:
+  societyId: int
+  category: AuditCategory
+  action: String
+  actorId: int?
+  actorName: String
+  actorRole: UserRole
+  target: String
+  description: String
+  timestamp: DateTime
+indexes:
+  audit_log_society_timestamp_idx:
+    fields: societyId, timestamp
+  audit_log_society_category_idx:
+    fields: societyId, category

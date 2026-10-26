@@ -1,0 +1,7 @@
+class: PaymentVerificationResult
+fields:
+  success: bool
+  message: String
+  isAlreadyProcessed: bool
+  paymentRecord: PaymentRecord?
+  bill: MaintenanceBill?

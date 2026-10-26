@@ -1,0 +1,29 @@
+class: PaymentTransaction
+table: payment_transaction
+fields:
+  orderId: String
+  billId: int
+  societyId: int
+  userId: int?
+  amount: double
+  amountPaise: int
+  currency: String
+  status: PaymentTransactionStatus
+  razorpayPaymentId: String?
+  razorpaySignature: String?
+  receiptNumber: String?
+  idempotencyKey: String?
+  failureReason: String?
+  isProcessed: bool
+  createdAt: DateTime
+  updatedAt: DateTime?
+indexes:
+  payment_tx_order_id_idx:
+    fields: orderId
+    unique: true
+  payment_tx_bill_id_idx:
+    fields: billId
+  payment_tx_society_id_idx:
+    fields: societyId
+  payment_tx_payment_id_idx:
+    fields: razorpayPaymentId

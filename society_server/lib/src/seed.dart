@@ -7,7 +7,13 @@ Future<void> seedInitialData(Serverpod pod) async {
     // Check if society already seeded
     final existing = await Society.db.findFirstRow(session);
     if (existing != null) {
-      session.log('[Seed] Database already contains data. Skipping seed.');
+      final existingAmenity = await Amenity.db.findFirstRow(session);
+      if (existingAmenity == null) {
+        session.log('[Seed] Seeding amenities, bookings, audit logs, and tenant NOCs for existing society...');
+        await _seedAmenitiesAndFeatures(session, existing.id!);
+      } else {
+        session.log('[Seed] Database already contains data. Skipping seed.');
+      }
       return;
     }
 
@@ -214,7 +220,8 @@ Future<void> seedInitialData(Serverpod pod) async {
         title: 'Model Housing Society Bye-Laws (Maharashtra)',
         description: 'Official society rules, member rights, elections and penalty clauses.',
         category: DocumentCategory.byeLaws,
-        fileUrl: 'https://society.storage/byelaws_2026.pdf',
+        storagePath: 'societies/$societyId/documents/byelaws_2026.pdf',
+        fileUrl: '/serverpod_cloud_storage?method=file&path=societies/$societyId/documents/byelaws_2026.pdf',
         fileSize: '3.4 MB',
         uploadedByName: 'Secretary Office',
         isCommitteeOnly: false,
@@ -233,7 +240,7 @@ Future<void> seedInitialData(Serverpod pod) async {
         agenda: 'Approval of audited balance sheet, appointment of statutory auditor, solar rooftop tender.',
         minutesSummary: 'Resolved: 1. Accounts unanimously passed. 2. Tata Solar proposal approved by majority. 3. Sinking fund contribution increased by ₹200/mo.',
         attendeesCount: 29,
-        documentUrl: 'https://society.storage/agm_minutes_2026.pdf',
+        documentUrl: '/serverpod_cloud_storage?method=file&path=societies/$societyId/documents/agm_minutes_2026.pdf',
         recordedByName: 'Rajesh Nair (Secretary)',
         createdAt: DateTime.now().subtract(const Duration(days: 24)),
       ),
@@ -284,8 +291,168 @@ Future<void> seedInitialData(Serverpod pod) async {
       await SocietySubscription.db.insertRow(session, s);
     }
 
+    // 15-18. Seed Amenities, Bookings, Audit, and Tenant NOCs
+    await _seedAmenitiesAndFeatures(session, societyId);
+
     session.log('[Seed] Database successfully seeded with baseline records!');
   } finally {
     await session.close();
   }
+}
+
+Future<void> _seedAmenitiesAndFeatures(Session session, int societyId) async {
+  // 15. Predefined Amenities & Facilities
+  await Amenity.db.insertRow(
+    session,
+    Amenity(
+      societyId: societyId,
+      name: 'Clubhouse & Community Hall',
+      icon: 'meeting_room',
+      capacity: 100,
+      rate: 500.0,
+      unit: 'per event slot',
+      timeSlots: ['09:00 AM - 01:00 PM', '02:00 PM - 06:00 PM', '07:00 PM - 11:00 PM'],
+      description: 'Air-conditioned community hall with dining space and stage for family functions and meetings.',
+      rules: 'Music allowed till 10 PM. Mandatory cleaning deposit required.',
+      isActive: true,
+      createdAt: DateTime.now(),
+    ),
+  );
+
+  await Amenity.db.insertRow(
+    session,
+    Amenity(
+      societyId: societyId,
+      name: 'Swimming Pool',
+      icon: 'pool',
+      capacity: 20,
+      rate: 0.0,
+      unit: 'free for residents',
+      timeSlots: ['06:00 AM - 07:30 AM', '07:30 AM - 09:00 AM', '05:00 PM - 06:30 PM', '06:30 PM - 08:00 PM'],
+      description: 'Temperature regulated clean swimming pool with toddler shallow section and lifeguard.',
+      rules: 'Proper nylon/spandex swimming costumes compulsory. Shower before entering.',
+      isActive: true,
+      createdAt: DateTime.now(),
+    ),
+  );
+
+  final turf = await Amenity.db.insertRow(
+    session,
+    Amenity(
+      societyId: societyId,
+      name: 'Badminton & Tennis Court',
+      icon: 'sports_tennis',
+      capacity: 8,
+      rate: 150.0,
+      unit: 'per hour',
+      timeSlots: ['06:00 AM - 07:00 AM', '07:00 AM - 08:00 AM', '06:00 PM - 07:00 PM', '07:00 PM - 08:00 PM', '08:00 PM - 09:00 PM'],
+      description: 'Synthetic rubberized multi-sport court with floodlights and spectator seating.',
+      rules: 'Non-marking sports shoes only. Maximum 1 hour consecutive booking per flat.',
+      isActive: true,
+      createdAt: DateTime.now(),
+    ),
+  );
+
+  await Amenity.db.insertRow(
+    session,
+    Amenity(
+      societyId: societyId,
+      name: 'Gymnasium & Fitness Studio',
+      icon: 'fitness_center',
+      capacity: 25,
+      rate: 0.0,
+      unit: 'free for residents',
+      timeSlots: ['06:00 AM - 10:00 AM', '05:00 PM - 09:30 PM'],
+      description: 'Modern cardio machines, free weights, treadmills, and yoga/aerobics floor.',
+      rules: 'Towels and clean gym shoes mandatory. Sanitize equipment after use.',
+      isActive: true,
+      createdAt: DateTime.now(),
+    ),
+  );
+
+  await Amenity.db.insertRow(
+    session,
+    Amenity(
+      societyId: societyId,
+      name: 'Rooftop Community Lounge',
+      icon: 'deck',
+      capacity: 40,
+      rate: 1000.0,
+      unit: 'per evening slot',
+      timeSlots: ['06:00 PM - 09:00 PM', '09:00 PM - 11:30 PM'],
+      description: 'Scenic terrace deck with ambient lighting and BBQ counter for small gatherings.',
+      rules: 'No open fire allowed. Respect silence hours after 10 PM.',
+      isActive: true,
+      createdAt: DateTime.now(),
+    ),
+  );
+
+  // 16. Baseline Amenity Booking
+  final tomorrow = DateTime.now().add(const Duration(days: 1));
+  await AmenityBooking.db.insertRow(
+    session,
+    AmenityBooking(
+      societyId: societyId,
+      amenityId: turf.id!,
+      amenityName: turf.name,
+      flatNumber: 'A-304',
+      bookedById: 1,
+      bookedByName: 'Vicky Patil',
+      bookingDate: DateTime.utc(tomorrow.year, tomorrow.month, tomorrow.day),
+      slot: '06:00 PM - 07:00 PM',
+      amountPaid: turf.rate,
+      status: BookingStatus.confirmed,
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+    ),
+  );
+
+  // 17. Baseline Audit Trail
+  await AuditLog.db.insertRow(
+    session,
+    AuditLog(
+      societyId: societyId,
+      category: AuditCategory.amenity,
+      action: 'AMENITY_RESERVED',
+      actorId: 1,
+      actorName: 'Vicky Patil',
+      actorRole: UserRole.resident,
+      target: '${turf.name} (06:00 PM - 07:00 PM)',
+      description: 'Flat A-304 reserved ${turf.name} for tomorrow',
+      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+    ),
+  );
+
+  await AuditLog.db.insertRow(
+    session,
+    AuditLog(
+      societyId: societyId,
+      category: AuditCategory.governance,
+      action: 'SOCIETY_CONFIG_UPDATED',
+      actorId: 3,
+      actorName: 'Anand Rao',
+      actorRole: UserRole.chairman,
+      target: 'Society Parameters',
+      description: 'Updated quarterly sinking fund rate to ₹200/mo following AGM resolution.',
+      timestamp: DateTime.now().subtract(const Duration(days: 1)),
+    ),
+  );
+
+  // 18. Tenant NOC Record
+  await TenantNoc.db.insertRow(
+    session,
+    TenantNoc(
+      societyId: societyId,
+      flatNumber: 'A-101',
+      ownerName: 'Vikas Sharma',
+      ownerPhone: '9822334455',
+      tenantName: 'Priya Verma',
+      tenantPhone: '9811776655',
+      leaseStart: DateTime.now().subtract(const Duration(days: 30)),
+      leaseEnd: DateTime.now().add(const Duration(days: 335)),
+      monthlyRent: 28000.0,
+      nocNumber: 'MH/CHS/NOC/2026/101',
+      status: NocStatus.approved,
+      issuedAt: DateTime.now().subtract(const Duration(days: 30)),
+    ),
+  );
 }

@@ -3,6 +3,8 @@ import 'package:society_client/society_client.dart';
 import '../../../../core/core.dart';
 import '../../../../services/society_state.dart';
 import 'payment_receipt_modal.dart';
+import 'payment_status_view.dart';
+import 'razorpay_checkout_dialog.dart';
 
 void showPayBillModal(BuildContext context, MaintenanceBill bill, SocietyState state) {
   AppBottomSheet.show(
@@ -23,22 +25,23 @@ class _PayBillContent extends StatefulWidget {
 }
 
 class _PayBillContentState extends State<_PayBillContent> {
-  String _selectedMethod = 'UPI (Google Pay / PhonePe)';
-  bool _isProcessing = false;
+  String _selectedMethod = 'Razorpay UPI (GPay / PhonePe)';
+  PaymentFlowStatus _status = PaymentFlowStatus.idle;
+  String? _errorMessage;
 
   final _methods = [
-    ('UPI (Google Pay / PhonePe)', Icons.qr_code_rounded),
-    ('Net Banking / NEFT', Icons.account_balance_rounded),
-    ('Debit / Credit Card', Icons.credit_card_rounded),
+    ('Razorpay UPI (GPay / PhonePe)', Icons.qr_code_rounded),
+    ('Razorpay Net Banking / NEFT', Icons.account_balance_rounded),
+    ('Razorpay Cards (Debit / Credit)', Icons.credit_card_rounded),
   ];
 
-  Widget _buildItemRow(BuildContext context, String title, String amount) {
+  Widget _buildItemRow(String title, String amount) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context))),
+          Text(title, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
           Text(amount, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         ],
       ),
@@ -46,25 +49,86 @@ class _PayBillContentState extends State<_PayBillContent> {
   }
 
   Future<void> _handlePayment() async {
-    setState(() => _isProcessing = true);
-    final record = await widget.state.payBill(
-      widget.bill.billNumber,
-      paymentMethod: _selectedMethod.split(' ')[0],
-    );
-    setState(() => _isProcessing = false);
+    setState(() {
+      _status = PaymentFlowStatus.creatingOrder;
+      _errorMessage = null;
+    });
+
+    // 1. Create order on server (amount computed server-side)
+    final order = await widget.state.createPaymentOrder(widget.bill.id ?? 1);
+
+    if (!mounted) return;
+    if (order == null) {
+      setState(() {
+        _status = PaymentFlowStatus.failed;
+        _errorMessage = 'Could not initiate payment order with the server. Please try again.';
+      });
+      return;
+    }
+
+    // 2. Open Razorpay Checkout modal
+    final checkoutResult = await RazorpayCheckoutDialog.show(context, order);
 
     if (!mounted) return;
 
-    Navigator.pop(context); // Close payment sheet
-    if (record != null) {
-      showPaymentReceiptModal(context, record, widget.bill);
+    if (checkoutResult == null || checkoutResult.outcome == RazorpayOutcome.cancelled) {
+      setState(() => _status = PaymentFlowStatus.cancelled);
+      return;
+    }
+
+    if (checkoutResult.outcome == RazorpayOutcome.failed) {
+      setState(() {
+        _status = PaymentFlowStatus.failed;
+        _errorMessage = checkoutResult.errorMessage ?? 'Payment transaction was declined.';
+      });
+      return;
+    }
+
+    if (checkoutResult.outcome == RazorpayOutcome.pending) {
+      setState(() {
+        _status = PaymentFlowStatus.pending;
+        _errorMessage = checkoutResult.errorMessage ?? 'Payment is pending bank authorization.';
+      });
+      return;
+    }
+
+    // 3. Verify Payment on Server
+    setState(() => _status = PaymentFlowStatus.verifying);
+
+    final verification = await widget.state.verifyPayment(
+      orderId: order.orderId,
+      paymentId: checkoutResult.paymentId!,
+      signature: checkoutResult.signature!,
+    );
+
+    if (!mounted) return;
+
+    if (verification != null && verification.success && verification.paymentRecord != null) {
+      Navigator.pop(context); // Close payment sheet
+      showPaymentReceiptModal(
+        context,
+        verification.paymentRecord!,
+        verification.bill ?? widget.bill,
+      );
     } else {
-      AppSnackbar.showError(context, 'Payment failed. Please retry.');
+      setState(() {
+        _status = PaymentFlowStatus.failed;
+        _errorMessage = verification?.message ?? 'Payment verification failed.';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_status != PaymentFlowStatus.idle) {
+      return PaymentStatusView(
+        status: _status,
+        errorMessage: _errorMessage,
+        onRetry: _handlePayment,
+        onCancel: () => setState(() => _status = PaymentFlowStatus.idle),
+      );
+    }
+
     final total = widget.bill.amount + widget.bill.lateFee;
 
     return Column(
@@ -102,12 +166,12 @@ class _PayBillContentState extends State<_PayBillContent> {
         AppCard(
           child: Column(
             children: [
-              _buildItemRow(context, 'Society Maintenance (Base)', '₹1,500.00'),
-              _buildItemRow(context, 'Sinking & Repair Fund', '₹350.00'),
-              _buildItemRow(context, 'Water & Lift Charges', '₹400.00'),
-              _buildItemRow(context, 'Parking & Security Charges', '₹200.00'),
+              _buildItemRow('Society Maintenance (Base)', '₹1,500.00'),
+              _buildItemRow('Sinking & Repair Fund', '₹350.00'),
+              _buildItemRow('Water & Lift Charges', '₹400.00'),
+              _buildItemRow('Parking & Security Charges', '₹200.00'),
               if (widget.bill.lateFee > 0)
-                _buildItemRow(context, 'Late Payment Penalty', '₹${widget.bill.lateFee.toStringAsFixed(2)}'),
+                _buildItemRow('Late Payment Penalty', '₹${widget.bill.lateFee.toStringAsFixed(2)}'),
               const Divider(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -125,7 +189,7 @@ class _PayBillContentState extends State<_PayBillContent> {
         AppSpacing.vGapLg,
 
         // Payment Method Selector
-        const Text('Choose Payment Method', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+        const Text('Payment Gateway (Razorpay)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
         AppSpacing.vGapSm,
         ..._methods.map((m) {
           final isSelected = _selectedMethod == m.$1;
@@ -157,10 +221,10 @@ class _PayBillContentState extends State<_PayBillContent> {
         }),
         AppSpacing.vGapLg,
 
-        AppButton.secondary(
-          label: 'Pay ₹${total.toStringAsFixed(2)} via ${_selectedMethod.split(" ")[0]}',
+        AppButton.primary(
+          label: 'Proceed to Pay ₹${total.toStringAsFixed(2)}',
           icon: Icons.lock_outline_rounded,
-          isLoading: _isProcessing,
+          isFullWidth: true,
           onPressed: _handlePayment,
         ),
       ],
