@@ -131,44 +131,49 @@ class _AmenityBookingScreenState extends State<AmenityBookingScreen> {
                         final a = amenities[index];
                         final isSelected = a.id == _selectedAmenity?.id;
 
-                        return AppCard(
+                        return PressScale(
                           onTap: () {
                             setState(() {
                               _selectedAmenity = a;
                               _selectedSlot = a.timeSlots.firstOrNull;
                             });
                           },
-                          width: 140,
-                          padding: AppSpacing.insetAllMd,
-                          borderColor: isSelected ? AppColors.accentTeal : null,
-                          color: isSelected
-                              ? (isDark
-                                  ? AppColors.accentTealDark.withValues(alpha: 0.25)
-                                  : AppColors.secondaryContainer.withValues(alpha: 0.5))
-                              : null,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                getAmenityIconData(a.icon),
-                                color: isSelected ? AppColors.accentTeal : AppColors.primaryNavy,
-                                size: 28,
-                              ),
-                              AppSpacing.vGapSm,
-                              Text(
-                                a.name,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                  color: isSelected
-                                      ? (isDark ? Colors.white : AppColors.accentTealDark)
-                                      : AppColors.textPrimary(context),
+                          child: AppCard(
+                            width: 140,
+                            padding: AppSpacing.insetAllMd,
+                            borderColor: isSelected ? AppColors.accentTeal : null,
+                            color: isSelected
+                                ? (isDark
+                                    ? AppColors.accentTealDark.withValues(alpha: 0.25)
+                                    : AppColors.secondaryContainer.withValues(alpha: 0.5))
+                                : null,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Hero(
+                                  tag: 'amenity_icon_${a.id}',
+                                  child: Icon(
+                                    getAmenityIconData(a.icon),
+                                    color: isSelected ? AppColors.accentTeal : AppColors.primaryNavy,
+                                    size: 28,
+                                  ),
                                 ),
-                                maxLines: 2,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                                AppSpacing.vGapSm,
+                                Text(
+                                  a.name,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                    color: isSelected
+                                        ? (isDark ? Colors.white : AppColors.accentTealDark)
+                                        : AppColors.textPrimary(context),
+                                  ),
+                                  maxLines: 2,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -203,29 +208,33 @@ class _AmenityBookingScreenState extends State<AmenityBookingScreen> {
                     message: 'Pick a date and facility above to reserve clubhouse or courts.',
                   )
                 else
-                  ...myBookings.map((b) {
+                  ...List.generate(myBookings.length, (index) {
+                    final b = myBookings[index];
                     final isConfirmed = b.status == BookingStatus.confirmed;
-                    return AppCard(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(b.amenityName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${b.bookingDate.day}/${b.bookingDate.month}/${b.bookingDate.year} • ${b.slot}',
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                          AppStatusChip(
-                            label: b.status.name.toUpperCase(),
-                            variant: isConfirmed ? AppStatusVariant.success : AppStatusVariant.neutral,
-                          ),
-                        ],
+                    return FadeSlideIn.staggered(
+                      index: index,
+                      child: AppCard(
+                        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(b.amenityName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${AppDateTimeFormatter.formatDate(b.bookingDate)} • ${b.slot}',
+                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            AppStatusChip(
+                              label: b.status.name.toUpperCase(),
+                              variant: isConfirmed ? AppStatusVariant.success : AppStatusVariant.neutral,
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }),

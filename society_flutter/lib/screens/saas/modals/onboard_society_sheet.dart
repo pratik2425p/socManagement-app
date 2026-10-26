@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/core.dart';
 import '../../../services/society_state.dart';
+import 'onboard_society_steps.dart';
 
 class OnboardSocietySheet extends StatefulWidget {
   final SocietyState state;
@@ -33,7 +34,41 @@ class _OnboardSocietySheetState extends State<OnboardSocietySheet> {
   final _adminEmailCtrl = TextEditingController();
 
   String _selectedPlan = 'Pro / Standard (Up to 200 Flats)';
+  int _currentStep = 0;
   bool _isSubmitting = false;
+
+  bool _validateStep(int step) {
+    if (step == 0) {
+      return _nameCtrl.text.trim().isNotEmpty &&
+          _codeCtrl.text.trim().isNotEmpty &&
+          _flatsCtrl.text.trim().isNotEmpty &&
+          _addressCtrl.text.trim().isNotEmpty;
+    }
+    if (step == 2) {
+      return _adminNameCtrl.text.trim().isNotEmpty &&
+          _adminPhoneCtrl.text.trim().length >= 8 &&
+          _adminEmailCtrl.text.contains('@');
+    }
+    return true;
+  }
+
+  void _nextStep() {
+    if (!_validateStep(_currentStep)) {
+      _formKey.currentState?.validate();
+      return;
+    }
+    if (_currentStep < 2) {
+      setState(() => _currentStep++);
+    } else {
+      _handleSubmit();
+    }
+  }
+
+  void _prevStep() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
+    }
+  }
 
   @override
   void dispose() {
@@ -106,166 +141,122 @@ class _OnboardSocietySheetState extends State<OnboardSocietySheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppSectionHeader(
-              title: '1. Society Information',
-              subtitle: 'Basic details for multi-tenant isolation',
-            ),
-            AppSpacing.vGapSm,
-            AppTextField(
-              controller: _nameCtrl,
-              label: 'Society Full Name',
-              hint: 'e.g. Greenwoods Co-op Housing Society',
-              prefixIcon: const Icon(Icons.apartment_rounded),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Society name required' : null,
-            ),
-            AppSpacing.vGapSm,
             Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: AppTextField(
-                    controller: _codeCtrl,
-                    label: 'Code',
-                    hint: 'GWH',
-                    textCapitalization: TextCapitalization.characters,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Code required' : null,
-                  ),
-                ),
-                AppSpacing.hGapSm,
-                Expanded(
-                  flex: 3,
-                  child: AppTextField(
-                    controller: _flatsCtrl,
-                    label: 'Total Flats',
-                    hint: '120',
-                    keyboardType: TextInputType.number,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Flats required' : null,
-                  ),
-                ),
-              ],
-            ),
-            AppSpacing.vGapSm,
-            AppTextField(
-              controller: _addressCtrl,
-              label: 'Street Address',
-              hint: 'e.g. Plot 45, Kothrud',
-              prefixIcon: const Icon(Icons.place_outlined),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Address required' : null,
-            ),
-            AppSpacing.vGapSm,
-            Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    controller: _cityCtrl,
-                    label: 'City',
-                  ),
-                ),
-                AppSpacing.hGapSm,
-                Expanded(
-                  child: AppTextField(
-                    controller: _stateCtrl,
-                    label: 'State',
-                  ),
-                ),
-                AppSpacing.hGapSm,
-                Expanded(
-                  child: AppTextField(
-                    controller: _pincodeCtrl,
-                    label: 'Pincode',
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            AppSpacing.vGapMd,
-            const AppSectionHeader(
-              title: '2. Subscription Tier',
-              subtitle: 'Recurring billing plan and feature unlocks',
-            ),
-            AppSpacing.vGapSm,
-            DropdownButtonFormField<String>(
-              initialValue: _selectedPlan,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceLight,
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                border: OutlineInputBorder(
-                  borderRadius: AppRadii.borderMd,
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                  ),
-                ),
-              ),
-              dropdownColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-              items: const [
-                DropdownMenuItem(
-                  value: 'Starter (Up to 50 Flats)',
-                  child: Text('Starter - ₹2,500/mo (Up to 50 Flats)'),
-                ),
-                DropdownMenuItem(
-                  value: 'Pro / Standard (Up to 200 Flats)',
-                  child: Text('Pro / Standard - ₹5,000/mo (Up to 200 Flats)'),
-                ),
-                DropdownMenuItem(
-                  value: 'Enterprise / Large (Unlimited)',
-                  child: Text('Enterprise - ₹12,000/mo (Unlimited Flats)'),
-                ),
-              ],
-              onChanged: (val) {
-                if (val != null) setState(() => _selectedPlan = val);
-              },
-            ),
-            AppSpacing.vGapMd,
-            const AppSectionHeader(
-              title: '3. Primary Administrator',
-              subtitle: 'Initial Chairman / Manager account credential',
-            ),
-            AppSpacing.vGapSm,
-            AppTextField(
-              controller: _adminNameCtrl,
-              label: 'Admin Full Name',
-              hint: 'e.g. Rajesh Deshmukh',
-              prefixIcon: const Icon(Icons.person_outline),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Admin name required' : null,
-            ),
-            AppSpacing.vGapSm,
-            Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    controller: _adminPhoneCtrl,
-                    label: 'Admin Mobile',
-                    hint: '9822334455',
-                    prefixIcon: const Icon(Icons.phone_outlined),
-                    keyboardType: TextInputType.phone,
-                    validator: (v) => (v == null || v.trim().length < 8) ? 'Valid phone required' : null,
-                  ),
-                ),
-                AppSpacing.hGapSm,
-                Expanded(
-                  child: AppTextField(
-                    controller: _adminEmailCtrl,
-                    label: 'Admin Email',
-                    hint: 'admin@greenwoods.in',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (v) => (v == null || !v.contains('@')) ? 'Valid email required' : null,
-                  ),
-                ),
+                _buildStepPill(0, '1. Society', isDark),
+                AppSpacing.hGapXs,
+                const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                AppSpacing.hGapXs,
+                _buildStepPill(1, '2. Plan', isDark),
+                AppSpacing.hGapXs,
+                const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                AppSpacing.hGapXs,
+                _buildStepPill(2, '3. Admin', isDark),
               ],
             ),
             AppSpacing.vGapLg,
-            AppButton(
-              label: 'Provision & Activate Society Account',
-              icon: Icons.check_circle_outline_rounded,
-              isFullWidth: true,
-              isLoading: _isSubmitting,
-              onPressed: _handleSubmit,
+            AnimatedSwitcher(
+              duration: AppMotion.base,
+              switchInCurve: AppMotion.standard,
+              switchOutCurve: AppMotion.standard,
+              child: _buildCurrentStep(isDark),
+            ),
+            AppSpacing.vGapLg,
+            Row(
+              children: [
+                if (_currentStep > 0) ...[
+                  Expanded(
+                    child: AppButton.outline(
+                      label: 'Back',
+                      icon: Icons.arrow_back,
+                      onPressed: _prevStep,
+                    ),
+                  ),
+                  AppSpacing.hGapSm,
+                ],
+                Expanded(
+                  flex: 2,
+                  child: AppButton(
+                    label: _currentStep == 2
+                        ? 'Provision & Activate'
+                        : 'Continue',
+                    icon: _currentStep == 2
+                        ? Icons.check_circle_outline_rounded
+                        : Icons.arrow_forward_rounded,
+                    isLoading: _isSubmitting,
+                    onPressed: _nextStep,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStepPill(int index, String title, bool isDark) {
+    final isActive = _currentStep == index;
+    final isDone = _currentStep > index;
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primaryNavy
+              : (isDone
+                  ? AppColors.success.withValues(alpha: 0.15)
+                  : (isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceLight)),
+          borderRadius: AppRadii.borderSm,
+          border: Border.all(
+            color: isActive
+                ? AppColors.primaryNavy
+                : (isDone ? AppColors.success : (isDark ? AppColors.borderDark : AppColors.borderLight)),
+          ),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isActive || isDone ? FontWeight.bold : FontWeight.normal,
+            color: isActive
+                ? Colors.white
+                : (isDone
+                    ? AppColors.success
+                    : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrentStep(bool isDark) {
+    switch (_currentStep) {
+      case 0:
+        return OnboardSocietyStep0(
+          nameCtrl: _nameCtrl,
+          codeCtrl: _codeCtrl,
+          flatsCtrl: _flatsCtrl,
+          addressCtrl: _addressCtrl,
+          cityCtrl: _cityCtrl,
+          stateCtrl: _stateCtrl,
+          pincodeCtrl: _pincodeCtrl,
+        );
+      case 1:
+        return OnboardSocietyStep1(
+          selectedPlan: _selectedPlan,
+          onPlanChanged: (val) => setState(() => _selectedPlan = val),
+          isDark: isDark,
+        );
+      case 2:
+      default:
+        return OnboardSocietyStep2(
+          adminNameCtrl: _adminNameCtrl,
+          adminPhoneCtrl: _adminPhoneCtrl,
+          adminEmailCtrl: _adminEmailCtrl,
+        );
+    }
   }
 }

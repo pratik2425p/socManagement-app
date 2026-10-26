@@ -48,14 +48,30 @@ class AccountantBalanceSummary extends StatelessWidget {
             ),
             AppMetricTile(
               title: 'Total Collections',
-              value: '₹${totalCollections.toStringAsFixed(0)}',
+              value: AppCurrencyFormatter.format(totalCollections),
+              valueWidget: AnimatedCountUp.currency(
+                endValue: totalCollections,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary(context),
+                ),
+              ),
               subtitle: '${paidBills.length} Invoices Settled',
               icon: Icons.arrow_downward_rounded,
               accentColor: AppColors.success,
             ),
             AppMetricTile(
               title: 'Outstanding Dues',
-              value: '₹${totalUnpaid.toStringAsFixed(0)}',
+              value: AppCurrencyFormatter.format(totalUnpaid),
+              valueWidget: AnimatedCountUp.currency(
+                endValue: totalUnpaid,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: totalUnpaid > 0 ? AppColors.error : AppColors.success,
+                ),
+              ),
               subtitle: '${unpaidBills.length} Pending Bills',
               icon: Icons.pending_actions_rounded,
               accentColor: totalUnpaid > 0 ? AppColors.error : AppColors.success,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../../../core/core.dart';
+import '../../../../services/data/demo_data_source.dart';
 import '../../../../services/society_state.dart';
 import 'modals/digital_gate_pass_modal.dart';
 import 'modals/emergency_sos_modal.dart';
@@ -35,6 +36,38 @@ class ResidentDashboard extends StatelessWidget {
             ResidentGreetingCard(state: state),
             AppSpacing.vGapMd,
 
+            // Demo Mode Gate Bell Simulator Quick Action
+            if (AppConfig.isDemoMode && state.dataSource is DemoDataSource) ...[
+              PressScale(
+                onTap: () {
+                  (state.dataSource as DemoDataSource).simulateVisitorArrival();
+                  AppSnackbar.showInfo(context, '🔔 Simulated visitor arrival! Ringing Flat A-101 Gate Bell...');
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentTeal.withValues(alpha: 0.12),
+                    borderRadius: AppRadii.borderMd,
+                    border: Border.all(color: AppColors.accentTeal.withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.doorbell_rounded, color: AppColors.accentTeal, size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Simulate Gate Bell Ringing (Demo Test)',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accentTealDark),
+                        ),
+                      ),
+                      Icon(Icons.play_circle_fill_rounded, color: AppColors.accentTeal, size: 18),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
             // 2. Active SOS Siren Banner (if triggered)
             if (activeSos.isNotEmpty) ...[
               AppCard(
@@ -42,6 +75,8 @@ class ResidentDashboard extends StatelessWidget {
                 borderColor: AppColors.errorBorder,
                 child: Row(
                   children: [
+                    const PulseDot.sos(size: 10),
+                    AppSpacing.hGapSm,
                     const Icon(Icons.emergency_rounded, color: AppColors.error, size: 28),
                     AppSpacing.hGapMd,
                     Expanded(

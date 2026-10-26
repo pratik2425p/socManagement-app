@@ -27,7 +27,27 @@ class SaasMetricsGrid extends StatelessWidget {
               width: cardWidth,
               child: AppMetricTile(
                 title: 'MRR Revenue',
-                value: '₹${metrics.monthlyRecurringRevenue.toInt()}',
+                value: AppCurrencyFormatter.format(metrics.monthlyRecurringRevenue),
+                valueWidget: AnimatedCountUp.currency(
+                  endValue: metrics.monthlyRecurringRevenue,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
+                trailing: SparklineChart(
+                  data: [
+                    metrics.monthlyRecurringRevenue * 0.75,
+                    metrics.monthlyRecurringRevenue * 0.82,
+                    metrics.monthlyRecurringRevenue * 0.88,
+                    metrics.monthlyRecurringRevenue * 0.94,
+                    metrics.monthlyRecurringRevenue,
+                  ],
+                  lineColor: AppColors.success,
+                  width: 48,
+                  height: 24,
+                ),
                 subtitle: 'Monthly recurring',
                 icon: Icons.currency_rupee_rounded,
                 accentColor: AppColors.success,
@@ -38,6 +58,15 @@ class SaasMetricsGrid extends StatelessWidget {
               child: AppMetricTile(
                 title: 'Managed Units',
                 value: '${metrics.totalManagedFlats}',
+                valueWidget: AnimatedCountUp(
+                  endValue: metrics.totalManagedFlats.toDouble(),
+                  decimalPlaces: 0,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
                 subtitle: 'Active apartments',
                 icon: Icons.apartment_rounded,
                 accentColor: AppColors.primaryNavy,
@@ -48,6 +77,15 @@ class SaasMetricsGrid extends StatelessWidget {
               child: AppMetricTile(
                 title: 'Client Societies',
                 value: '${metrics.totalSocieties}',
+                valueWidget: AnimatedCountUp(
+                  endValue: metrics.totalSocieties.toDouble(),
+                  decimalPlaces: 0,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
                 subtitle: '${metrics.trialSocieties} in trial period',
                 icon: Icons.business_rounded,
                 accentColor: AppColors.accentTeal,

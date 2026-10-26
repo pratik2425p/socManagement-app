@@ -8,6 +8,7 @@ import 'app_card.dart';
 class AppMetricTile extends StatelessWidget {
   final String title;
   final String value;
+  final Widget? valueWidget;
   final String? subtitle;
   final IconData icon;
   final Color? accentColor;
@@ -17,7 +18,8 @@ class AppMetricTile extends StatelessWidget {
   const AppMetricTile({
     super.key,
     required this.title,
-    required this.value,
+    this.value = '',
+    this.valueWidget,
     this.subtitle,
     required this.icon,
     this.accentColor,
@@ -53,16 +55,17 @@ class AppMetricTile extends StatelessWidget {
             ],
           ),
           AppSpacing.vGapSm,
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          valueWidget ??
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
           const SizedBox(height: 2),
           Text(
             title,

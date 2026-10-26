@@ -80,69 +80,133 @@ class ChairmanVoucherQueue extends StatelessWidget {
     }
 
     return Column(
-      children: pendingVouchers.map((voucher) {
-        return AppCard(
-          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-          color: AppColors.warningContainer,
-          borderColor: AppColors.warningBorder,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(pendingVouchers.length, (index) {
+        final voucher = pendingVouchers[index];
+        return FadeSlideIn.staggered(
+          index: index,
+          child: Dismissible(
+            key: ValueKey('voucher_${voucher.id ?? index}'),
+            direction: DismissDirection.horizontal,
+            background: Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.success,
+                borderRadius: AppRadii.borderMd,
+              ),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: const Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      voucher.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                  Icon(Icons.check_circle_rounded, color: Colors.white, size: 28),
+                  AppSpacing.hGapSm,
                   Text(
-                    '₹${voucher.amount.toStringAsFixed(0)}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryNavy),
+                    'Approve Expense',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              AppSpacing.vGapXs,
-              Text(
-                'Voucher: ${voucher.voucherNumber} • Requested by: ${voucher.requestedByName}',
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+            secondaryBackground: Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.error,
+                borderRadius: AppRadii.borderMd,
               ),
-              AppSpacing.vGapSm,
-              Text(
-                voucher.description,
-                style: const TextStyle(fontSize: 12, height: 1.3),
-              ),
-              const Divider(height: 18),
-              Row(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  AppButton.outline(
-                    label: 'Reject with Remarks',
-                    height: 36,
-                    onPressed: () => _showRejectDialog(context, voucher),
+                  Text(
+                    'Reject with Remarks',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   AppSpacing.hGapSm,
-                  AppButton.secondary(
-                    label: 'Approve Expense',
-                    icon: Icons.check,
-                    height: 36,
-                    onPressed: () {
-                      state.approveVoucher(voucher.id!);
-                      AppSnackbar.showSuccess(
-                        context,
-                        'Voucher ${voucher.voucherNumber} approved! Forwarded to Accountant for Ledger posting.',
-                      );
-                    },
+                  Icon(Icons.cancel_rounded, color: Colors.white, size: 28),
+                ],
+              ),
+            ),
+            confirmDismiss: (direction) async {
+              if (direction == DismissDirection.startToEnd) {
+                state.approveVoucher(voucher.id!);
+                AppSnackbar.showSuccess(
+                  context,
+                  'Voucher ${voucher.voucherNumber} approved! Forwarded to Accountant.',
+                );
+                return true;
+              } else {
+                _showRejectDialog(context, voucher);
+                return false;
+              }
+            },
+            child: AppCard(
+              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+              color: AppColors.warningContainer,
+              borderColor: AppColors.warningBorder,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          voucher.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        AppCurrencyFormatter.format(voucher.amount),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryNavy),
+                      ),
+                    ],
+                  ),
+                  AppSpacing.vGapXs,
+                  Text(
+                    'Voucher: ${voucher.voucherNumber} • Requested by: ${voucher.requestedByName}',
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  AppSpacing.vGapSm,
+                  Text(
+                    voucher.description,
+                    style: const TextStyle(fontSize: 12, height: 1.3),
+                  ),
+                  const Divider(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      PressScale(
+                        child: AppButton.outline(
+                          label: 'Reject with Remarks',
+                          height: 36,
+                          onPressed: () => _showRejectDialog(context, voucher),
+                        ),
+                      ),
+                      AppSpacing.hGapSm,
+                      PressScale(
+                        child: AppButton.secondary(
+                          label: 'Approve Expense',
+                          icon: Icons.check,
+                          height: 36,
+                          onPressed: () {
+                            state.approveVoucher(voucher.id!);
+                            AppSnackbar.showSuccess(
+                              context,
+                              'Voucher ${voucher.voucherNumber} approved! Forwarded to Accountant for Ledger posting.',
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         );
-      }).toList(),
+      }),
     );
   }
 }

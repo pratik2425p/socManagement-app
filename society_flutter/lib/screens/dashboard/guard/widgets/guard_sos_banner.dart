@@ -26,6 +26,8 @@ class GuardSosBanner extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  const PulseDot.sos(size: 12),
+                  AppSpacing.hGapSm,
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: const BoxDecoration(

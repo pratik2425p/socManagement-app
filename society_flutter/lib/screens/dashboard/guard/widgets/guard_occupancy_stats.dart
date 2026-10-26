@@ -38,9 +38,9 @@ class GuardOccupancyStats extends StatelessWidget {
                       ],
                     ),
                     AppSpacing.vGapSm,
-                    Text(
-                      '$insideCount',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.success),
+                    AnimatedCountUp(
+                      endValue: insideCount,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.success),
                     ),
                     const SizedBox(height: 2),
                     const Text('Active on campus', style: TextStyle(fontSize: 10, color: Colors.grey)),
@@ -63,9 +63,9 @@ class GuardOccupancyStats extends StatelessWidget {
                       ],
                     ),
                     AppSpacing.vGapSm,
-                    Text(
-                      '$waitingCount',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.warningDark),
+                    AnimatedCountUp(
+                      endValue: waitingCount,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.warningDark),
                     ),
                     const SizedBox(height: 2),
                     const Text('Resident gate bell', style: TextStyle(fontSize: 10, color: Colors.grey)),

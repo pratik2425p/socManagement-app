@@ -31,7 +31,10 @@ class AmenityReservationCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(getAmenityIconData(amenity.icon), color: AppColors.accentTeal, size: 24),
+              Hero(
+                tag: 'amenity_icon_${amenity.id}',
+                child: Icon(getAmenityIconData(amenity.icon), color: AppColors.accentTeal, size: 24),
+              ),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(
@@ -89,22 +92,24 @@ class AmenityReservationCard extends StatelessWidget {
                 children: [
                   const Text('Reservation Date', style: TextStyle(fontSize: 11, color: Colors.grey)),
                   Text(
-                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                    AppDateTimeFormatter.formatDate(selectedDate),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              AppButton.outline(
-                label: 'Change Date',
-                icon: Icons.calendar_today_rounded,
-                height: 38,
-                onPressed: onPickDate,
+              PressScale(
+                child: AppButton.outline(
+                  label: 'Change Date',
+                  icon: Icons.calendar_today_rounded,
+                  height: 38,
+                  onPressed: onPickDate,
+                ),
               ),
             ],
           ),
           AppSpacing.vGapLg,
 
-          // Slot Chips
+          // Morphing Slot Picker
           const Text('Select Time Slot *', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           AppSpacing.vGapSm,
           Wrap(
@@ -112,29 +117,62 @@ class AmenityReservationCard extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             children: amenity.timeSlots.map((slot) {
               final isSlotSelected = selectedSlot == slot;
-              return ChoiceChip(
-                label: Text(slot),
-                selected: isSlotSelected,
-                selectedColor: AppColors.primaryContainer,
-                labelStyle: TextStyle(
-                  color: isSlotSelected ? AppColors.primaryNavy : AppColors.textSecondary(context),
-                  fontWeight: isSlotSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 11,
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+
+              return PressScale(
+                onTap: () => onSlotSelected(slot),
+                child: AnimatedContainer(
+                  duration: AppMotion.fast,
+                  curve: AppMotion.standard,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSlotSelected
+                        ? (isDark
+                            ? AppColors.primaryNavy
+                            : AppColors.primaryNavy)
+                        : (isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceLight),
+                    borderRadius: isSlotSelected ? AppRadii.borderLg : AppRadii.borderSm,
+                    border: Border.all(
+                      color: isSlotSelected
+                          ? AppColors.accentTeal
+                          : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                      width: isSlotSelected ? 1.5 : 1.0,
+                    ),
+                    boxShadow: isSlotSelected ? AppShadows.subtle(context) : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isSlotSelected) ...[
+                        const Icon(Icons.check_circle_rounded, size: 14, color: AppColors.accentTeal),
+                        AppSpacing.hGapXs,
+                      ],
+                      Text(
+                        slot,
+                        style: TextStyle(
+                          color: isSlotSelected
+                              ? Colors.white
+                              : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                          fontWeight: isSlotSelected ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                onSelected: (val) {
-                  if (val) onSlotSelected(slot);
-                },
               );
             }).toList(),
           ),
           AppSpacing.vGapXl,
 
-          AppButton.primary(
-            label: 'Confirm Amenity Reservation',
-            icon: Icons.check_circle_outline_rounded,
-            isLoading: isSubmitting,
-            isFullWidth: true,
-            onPressed: onConfirm,
+          PressScale(
+            child: AppButton.primary(
+              label: 'Confirm Amenity Reservation',
+              icon: Icons.check_circle_outline_rounded,
+              isLoading: isSubmitting,
+              isFullWidth: true,
+              onPressed: onConfirm,
+            ),
           ),
         ],
       ),
