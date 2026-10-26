@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../../../core/core.dart';
+import '../../../../services/payment/payment_gateway.dart';
 import '../../../../services/society_state.dart';
 import 'payment_receipt_modal.dart';
 import 'payment_status_view.dart';
@@ -66,8 +67,8 @@ class _PayBillContentState extends State<_PayBillContent> {
       return;
     }
 
-    // 2. Open Razorpay Checkout modal
-    final checkoutResult = await RazorpayCheckoutDialog.show(context, order);
+    // 2. Open payment gateway (Demo or Razorpay)
+    final checkoutResult = await PaymentGatewayFactory.getGateway().openCheckout(context, order);
 
     if (!mounted) return;
 

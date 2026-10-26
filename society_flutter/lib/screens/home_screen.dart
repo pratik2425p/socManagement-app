@@ -114,7 +114,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Direct unauthenticated users to the SMS OTP Sign In Screen
     if (!state.isLoggedIn) {
+      if (state.hasConnectionError && !AppConfig.isDemoMode) {
+        return ConnectionErrorView(state: state);
+      }
       return SignInScreen(state: state);
+    }
+
+    if (state.hasConnectionError && !AppConfig.isDemoMode) {
+      return ConnectionErrorView(state: state);
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -180,6 +187,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () => showUserManagementSheet(context, state),
               ),
             ),
+
+          // Demo Mode Controller Badge (visible only in Demo mode)
+          DemoRibbonBadge(state: state),
 
           // User Profile & Persona Switcher Avatar
           Padding(

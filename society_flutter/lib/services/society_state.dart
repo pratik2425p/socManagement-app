@@ -4,9 +4,26 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:society_client/society_client.dart';
+import '../core/config/app_config.dart';
+import 'data/demo_data_source.dart';
+import 'data/server_data_source.dart';
+import 'data/society_data_source.dart';
 
 class SocietyState extends ChangeNotifier {
-  final Client client;
+  final SocietyDataSource dataSource;
+  final Client? _client;
+
+  Client get client =>
+      _client ??
+      (dataSource is ServerDataSource
+          ? (dataSource as ServerDataSource).client
+          : Client('http://localhost:8080'));
+
+  bool _hasConnectionError = false;
+  String? _connectionErrorMessage;
+
+  bool get hasConnectionError => _hasConnectionError;
+  String? get connectionErrorMessage => _connectionErrorMessage;
 
   UserRole _currentRole = UserRole.chairman;
   String _societyName = '';
@@ -28,7 +45,14 @@ class SocietyState extends ChangeNotifier {
   List<SocietyUser> get users => _users;
   Society? get currentSociety => _currentSociety;
 
-  SocietyState({required this.client}) {
+  SocietyState({
+    SocietyDataSource? dataSource,
+    Client? client,
+  })  : dataSource = dataSource ??
+            (AppConfig.isDemoMode
+                ? DemoDataSource()
+                : (client != null ? ServerDataSource(client) : DemoDataSource())),
+        _client = client {
     fetchInitialData();
   }
 
@@ -113,10 +137,12 @@ class SocietyState extends ChangeNotifier {
   // --- Real API Data Fetching ---
   Future<void> fetchInitialData() async {
     _isLoading = true;
+    _hasConnectionError = false;
+    _connectionErrorMessage = null;
     notifyListeners();
 
     try {
-      final socs = await client.society.getSocieties();
+      final socs = await dataSource.getSocieties();
       _societies = socs;
       if (socs.isNotEmpty) {
         _currentSociety = socs.first;
@@ -145,13 +171,26 @@ class SocietyState extends ChangeNotifier {
         _loadAuditLogs(),
         _loadTenantNocs(),
       ]);
+
+      // If demo mode, auto-login with Aarav Mehta (Resident) so it is immediately interactive
+      if (AppConfig.isDemoMode && !_isLoggedIn && _users.isNotEmpty) {
+        setActiveUser(_users.first);
+      }
+      _hasConnectionError = false;
     } catch (e) {
       debugPrint('[SocietyState] API Fetch Error: $e');
+      if (!AppConfig.isDemoMode) {
+        _hasConnectionError = true;
+        _connectionErrorMessage =
+            'Unable to connect to SocietyOS server ($e). Please verify serverpod server is running or run with DEMO_MODE=true.';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
+
+  Future<void> retryConnection() => fetchInitialData();
 
   void setActiveUser(SocietyUser user) async {
     _isLoggedIn = true;
@@ -230,7 +269,7 @@ class SocietyState extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final result = await client.auth.sendOtp(phone);
+      final result = await dataSource.sendOtp(phone);
       return result;
     } catch (e) {
       debugPrint('Error sending OTP: $e');
@@ -250,21 +289,23 @@ class SocietyState extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final res = await client.auth.verifyOtp(phone, otp);
-      if (res.success && res.token != null && res.user != null) {
-        final authUserId = res.user!.authUserId != null && res.user!.authUserId!.isNotEmpty
-            ? UuidValue.fromString(res.user!.authUserId!)
-            : UuidValue.fromString(Uuid().v4());
+      final res = await dataSource.verifyOtp(phone, otp);
+      if (res.success && res.user != null) {
+        if (res.token != null && _client != null) {
+          final authUserId = res.user!.authUserId != null && res.user!.authUserId!.isNotEmpty
+              ? UuidValue.fromString(res.user!.authUserId!)
+              : UuidValue.fromString(Uuid().v4());
 
-        final authSuccess = AuthSuccess(
-          authStrategy: 'jwt',
-          token: res.token!,
-          authUserId: authUserId,
-          scopeNames: {'user', res.user!.role.name},
-        );
+          final authSuccess = AuthSuccess(
+            authStrategy: 'jwt',
+            token: res.token!,
+            authUserId: authUserId,
+            scopeNames: {'user', res.user!.role.name},
+          );
 
-        final authSession = client.authSessionManager;
-        await authSession.updateSignedInUser(authSuccess);
+          final authSession = client.authSessionManager;
+          await authSession.updateSignedInUser(authSuccess);
+        }
 
         _isLoggedIn = true;
         _activeUser = res.user;
@@ -317,16 +358,9 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> logout() async {
     try {
-      await client.auth.signOut();
+      await dataSource.signOut();
     } catch (e) {
-      debugPrint('Error signing out on server: $e');
-    }
-
-    try {
-      final authSession = client.authSessionManager;
-      await authSession.signOutDevice();
-    } catch (e) {
-      debugPrint('Error signing out session: $e');
+      debugPrint('Error signing out on data source: $e');
     }
 
     _isLoggedIn = false;
@@ -392,7 +426,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadUsers() async {
     try {
-      _users = await client.society.getSocietyUsers(_currentSocietyId);
+      _users = await dataSource.getUsers(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading users: $e');
     }
@@ -400,7 +434,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadBills() async {
     try {
-      _bills = await client.maintenance.getBills(_currentSocietyId);
+      _bills = await dataSource.getBills(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading bills: $e');
     }
@@ -408,7 +442,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadVisitors() async {
     try {
-      _visitors = await client.visitor.getVisitors();
+      _visitors = await dataSource.getVisitors();
     } catch (e) {
       debugPrint('Error loading visitors: $e');
     }
@@ -416,7 +450,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadVouchers() async {
     try {
-      _vouchers = await client.accounting.getVouchers(_currentSocietyId);
+      _vouchers = await dataSource.getVouchers(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading vouchers: $e');
     }
@@ -424,7 +458,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadLedger() async {
     try {
-      _ledgerEntries = await client.accounting.getLedgerEntries(_currentSocietyId);
+      _ledgerEntries = await dataSource.getLedgerEntries(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading ledger: $e');
     }
@@ -432,7 +466,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadComplaints() async {
     try {
-      _complaints = await client.communication.getComplaints();
+      _complaints = await dataSource.getComplaints();
     } catch (e) {
       debugPrint('Error loading complaints: $e');
     }
@@ -440,7 +474,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadNotices() async {
     try {
-      _notices = await client.communication.getNotices();
+      _notices = await dataSource.getNotices();
     } catch (e) {
       debugPrint('Error loading notices: $e');
     }
@@ -448,7 +482,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadDocuments() async {
     try {
-      _documents = await client.document.getDocuments(limit: 50, offset: 0);
+      _documents = await dataSource.getDocuments(limit: 50, offset: 0);
     } catch (e) {
       debugPrint('Error loading documents: $e');
     }
@@ -456,7 +490,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadMeetingMinutes() async {
     try {
-      _meetingMinutes = await client.document.getMeetingMinutes(limit: 50, offset: 0);
+      _meetingMinutes = await dataSource.getMeetingMinutes(limit: 50, offset: 0);
     } catch (e) {
       debugPrint('Error loading meeting minutes: $e');
     }
@@ -464,10 +498,10 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadPolls() async {
     try {
-      _polls = await client.poll.getPolls(_currentSocietyId);
+      _polls = await dataSource.getPolls(_currentSocietyId);
       for (final p in _polls) {
         if (p.id != null) {
-          _pollOptions[p.id!] = await client.poll.getPollOptions(p.id!);
+          _pollOptions[p.id!] = await dataSource.getPollOptions(p.id!);
         }
       }
     } catch (e) {
@@ -477,7 +511,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadSosAlerts() async {
     try {
-      _sosAlerts = await client.sos.getActiveSosAlerts();
+      _sosAlerts = await dataSource.getActiveSosAlerts();
     } catch (e) {
       debugPrint('Error loading SOS alerts: $e');
     }
@@ -485,8 +519,8 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadSubscriptions() async {
     try {
-      _subscriptions = await client.saasAdmin.getAllSubscriptions();
-      _saasMetrics = await client.saasAdmin.getMetricSummary();
+      _subscriptions = await dataSource.getAllSubscriptions();
+      _saasMetrics = await dataSource.getMetricSummary();
     } catch (e) {
       debugPrint('Error loading subscriptions: $e');
     }
@@ -494,7 +528,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadAmenities() async {
     try {
-      _amenities = await client.amenity.getAmenities(limit: 50, offset: 0);
+      _amenities = await dataSource.getAmenities(limit: 50, offset: 0);
     } catch (e) {
       debugPrint('Error loading amenities: $e');
     }
@@ -502,7 +536,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadAmenityBookings() async {
     try {
-      _amenityBookings = await client.amenity.getBookings(limit: 50, offset: 0);
+      _amenityBookings = await dataSource.getAmenityBookings(limit: 50, offset: 0);
     } catch (e) {
       debugPrint('Error loading amenity bookings: $e');
     }
@@ -510,7 +544,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadAuditLogs([AuditCategory? category]) async {
     try {
-      final logs = await client.audit.getAuditLogs(category: category, limit: 50, offset: 0);
+      final logs = await dataSource.getAuditLogs(limit: 50, offset: 0);
       _auditLogs.clear();
       _auditLogs.addAll(logs);
     } catch (e) {
@@ -520,7 +554,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadTenantNocs([NocStatus? status]) async {
     try {
-      final nocs = await client.tenancy.getTenantNocs(status: status, limit: 50, offset: 0);
+      final nocs = await dataSource.getTenantNocs(limit: 50, offset: 0);
       _tenantNocs.clear();
       _tenantNocs.addAll(nocs);
     } catch (e) {
@@ -535,9 +569,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> loadAmenityBookings({DateTime? date, int? amenityId}) async {
     try {
-      final bookings = await client.amenity.getBookings(
-        date: date,
-        amenityId: amenityId,
+      final bookings = await dataSource.getAmenityBookings(
         limit: 50,
         offset: 0,
       );
@@ -561,7 +593,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> loadSocieties() async {
     try {
-      _societies = await client.society.getSocieties();
+      _societies = await dataSource.getSocieties();
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading societies: $e');
@@ -596,7 +628,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadBuildings() async {
     try {
-      _buildings = await client.society.getBuildings(_currentSocietyId);
+      _buildings = await dataSource.getBuildings(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading buildings: $e');
     }
@@ -604,7 +636,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadFlats() async {
     try {
-      _flats = await client.society.getFlats(_currentSocietyId);
+      _flats = await dataSource.getFlats(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading flats: $e');
     }
@@ -612,7 +644,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadInvitations() async {
     try {
-      _invitations = await client.society.getInvitations(_currentSocietyId);
+      _invitations = await dataSource.getInvitations(_currentSocietyId);
     } catch (e) {
       debugPrint('Error loading invitations: $e');
     }
@@ -925,7 +957,7 @@ class SocietyState extends ChangeNotifier {
   /// Creates a Razorpay order computed server-side from the bill.
   Future<RazorpayOrderResponse?> createPaymentOrder(int billId) async {
     try {
-      return await client.payment.createPaymentOrder(billId);
+      return await dataSource.createPaymentOrder(billId);
     } catch (e) {
       debugPrint('[SocietyState] Error creating payment order: $e');
       return null;
@@ -939,7 +971,7 @@ class SocietyState extends ChangeNotifier {
     required String signature,
   }) async {
     try {
-      final res = await client.payment.verifyPayment(orderId, paymentId, signature);
+      final res = await dataSource.verifyPayment(orderId, paymentId, signature);
       if (res.success) {
         await Future.wait([
           _loadBills(),
@@ -1018,7 +1050,7 @@ class SocietyState extends ChangeNotifier {
       entryGate: 'Main Gate 1',
     );
     try {
-      final created = await client.visitor.createVisitorEntry(entry);
+      final created = await dataSource.createVisitorEntry(entry);
       await _loadVisitors();
       recordAuditEvent(
         category: 'Gate & Security',
@@ -1053,7 +1085,7 @@ class SocietyState extends ChangeNotifier {
       checkInTime: DateTime.now(),
     );
     try {
-      await client.visitor.createVisitorEntry(entry);
+      await dataSource.createVisitorEntry(entry);
       await _loadVisitors();
       notifyListeners();
     } catch (e) {
@@ -1063,9 +1095,9 @@ class SocietyState extends ChangeNotifier {
 
   Future<bool> guardVerifyPasscode(String passcode) async {
     try {
-      final verified = await client.visitor.verifyVisitorPasscode(passcode);
+      final verified = await dataSource.verifyVisitorPasscode(passcode);
       if (verified != null && verified.id != null) {
-        await client.visitor.updateVisitorStatus(verified.id!, VisitorStatus.inside);
+        await dataSource.updateVisitorStatus(verified.id!, VisitorStatus.inside);
         await _loadVisitors();
         recordAuditEvent(
           category: 'Gate & Security',
@@ -1084,7 +1116,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> updateVisitorStatus(int id, VisitorStatus status) async {
     try {
-      await client.visitor.updateVisitorStatus(id, status);
+      await dataSource.updateVisitorStatus(id, status);
       await _loadVisitors();
       notifyListeners();
     } catch (e) {
@@ -1111,7 +1143,7 @@ class SocietyState extends ChangeNotifier {
       createdAt: DateTime.now(),
     );
     try {
-      await client.accounting.createVoucherRequest(req);
+      await dataSource.createVoucherRequest(req);
       await _loadVouchers();
       recordAuditEvent(
         category: 'Financial',
@@ -1128,7 +1160,7 @@ class SocietyState extends ChangeNotifier {
   Future<void> approveVoucher(int id) async {
     try {
       final v = _vouchers.firstWhere((item) => item.id == id);
-      await client.accounting.approveVoucher(id, '$_currentUserName (Chairman)');
+      await dataSource.approveVoucher(id, '$_currentUserName (Chairman)');
       await _loadVouchers();
       recordAuditEvent(
         category: 'Financial',
@@ -1145,7 +1177,7 @@ class SocietyState extends ChangeNotifier {
   Future<void> rejectVoucher(int id, String reason) async {
     try {
       final v = _vouchers.firstWhere((item) => item.id == id);
-      await client.accounting.rejectVoucher(id, reason);
+      await dataSource.rejectVoucher(id, reason);
       await _loadVouchers();
       recordAuditEvent(
         category: 'Financial',
@@ -1162,12 +1194,12 @@ class SocietyState extends ChangeNotifier {
   Future<void> postVoucherToLedger(int voucherId) async {
     final v = _vouchers.firstWhere((item) => item.id == voucherId);
     try {
-      await client.accounting.postVoucherToLedger(
+      await dataSource.postVoucherToLedger(
         voucherId,
         '$_currentUserName (Accountant)',
         'Settled expense: ${v.title} (${v.voucherNumber})',
         v.amount,
-        v.amount,
+        0.0,
       );
       await _loadVouchers();
       await _loadLedger();
@@ -1199,7 +1231,7 @@ class SocietyState extends ChangeNotifier {
       createdAt: DateTime.now(),
     );
     try {
-      await client.communication.createComplaint(cmp);
+      await dataSource.createComplaint(cmp);
       await _loadComplaints();
       notifyListeners();
     } catch (e) {
@@ -1209,7 +1241,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> updateComplaintStatus(int id, ComplaintStatus status, {String? notes}) async {
     try {
-      await client.communication.updateComplaintStatus(id, status, notes);
+      await dataSource.updateComplaintStatus(id, status, notes);
       await _loadComplaints();
       notifyListeners();
     } catch (e) {
@@ -1233,7 +1265,7 @@ class SocietyState extends ChangeNotifier {
       postedAt: DateTime.now(),
     );
     try {
-      await client.communication.createNotice(notice);
+      await dataSource.createNotice(notice);
       await _loadNotices();
       recordAuditEvent(
         category: 'Governance',
@@ -1337,7 +1369,7 @@ class SocietyState extends ChangeNotifier {
     if (_votedPollFlats.contains(key)) return false;
 
     try {
-      final success = await client.poll.castVote(
+      final success = await dataSource.castVote(
         pollId,
         flatNumber,
         _currentUserName,
@@ -1375,7 +1407,7 @@ class SocietyState extends ChangeNotifier {
       raisedAt: DateTime.now(),
     );
     try {
-      await client.sos.raiseSosAlert(alert);
+      await dataSource.raiseSosAlert(alert);
       await _loadSosAlerts();
       recordAuditEvent(
         category: 'Gate & Security',
@@ -1391,7 +1423,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> acknowledgeSos(int id, String guardName) async {
     try {
-      await client.sos.acknowledgeSos(id, guardName);
+      await dataSource.acknowledgeSos(id, guardName);
       await _loadSosAlerts();
       recordAuditEvent(
         category: 'Gate & Security',
@@ -1407,7 +1439,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> resolveSos(int id, String resolverName, String notes) async {
     try {
-      await client.sos.resolveSos(id, resolverName, notes);
+      await dataSource.resolveSos(id, resolverName, notes);
       await _loadSosAlerts();
       recordAuditEvent(
         category: 'Gate & Security',
@@ -1493,7 +1525,7 @@ class SocietyState extends ChangeNotifier {
     );
 
     try {
-      await client.saasAdmin.createSubscription(sub);
+      await dataSource.createSubscription(sub);
       await _loadSubscriptions();
       notifyListeners();
     } catch (e) {

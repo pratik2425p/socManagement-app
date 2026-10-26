@@ -23,4 +23,7 @@ export 'widgets/app_section_header.dart';
 export 'widgets/app_metric_tile.dart';
 export 'widgets/app_responsive.dart';
 export 'widgets/amenity_icon.dart';
+export 'widgets/demo_ribbon.dart';
+export 'widgets/connection_error_view.dart';
+export 'config/app_config.dart';
 export 'utils/pdf_receipt_generator.dart';

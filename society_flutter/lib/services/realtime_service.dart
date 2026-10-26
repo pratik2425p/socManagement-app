@@ -89,7 +89,7 @@ class RealtimeService with WidgetsBindingObserver {
     _sosSub = null;
 
     try {
-      final stream = client.realtime.streamSosAlerts(
+      final stream = state.dataSource.streamSosAlerts(
         requestedSocietyId: state.currentSocietyId,
       );
 
@@ -133,7 +133,7 @@ class RealtimeService with WidgetsBindingObserver {
     }
 
     try {
-      final stream = client.realtime.streamGateBell(
+      final stream = state.dataSource.streamGateBell(
         requestedFlat: flat.isNotEmpty ? flat : null,
       );
 
@@ -220,7 +220,7 @@ class RealtimeService with WidgetsBindingObserver {
     if (_registeredToken == token) return;
 
     try {
-      final success = await client.notification.registerDeviceToken(
+      final success = await state.dataSource.registerDeviceToken(
         deviceToken: token,
         platform: defaultTargetPlatform.name,
       );
@@ -237,7 +237,7 @@ class RealtimeService with WidgetsBindingObserver {
   Future<void> _unregisterDeviceToken() async {
     if (_registeredToken == null) return;
     try {
-      await client.notification.unregisterDeviceToken(deviceToken: _registeredToken!);
+      await state.dataSource.unregisterDeviceToken(deviceToken: _registeredToken!);
       debugPrint('[RealtimeService] Unregistered device push token: $_registeredToken');
     } catch (e) {
       debugPrint('[RealtimeService] Error unregistering device token: $e');

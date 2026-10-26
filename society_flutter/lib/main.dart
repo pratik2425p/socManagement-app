@@ -3,7 +3,10 @@ import 'package:society_client/society_client.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
+import 'core/config/app_config.dart';
 import 'core/utils/navigation_service.dart';
+import 'services/data/demo_data_source.dart';
+import 'services/data/server_data_source.dart';
 import 'services/realtime_service.dart';
 import 'theme/app_theme.dart';
 import 'services/society_state.dart';
@@ -18,13 +21,22 @@ late final RealtimeService realtimeService;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final serverUrl = await getServerUrl();
+  if (AppConfig.isDemoMode) {
+    client = Client('http://localhost:8080');
+    globalSocietyState = SocietyState(dataSource: DemoDataSource());
+  } else {
+    final serverUrl = await getServerUrl();
 
-  client = Client(serverUrl)
-    ..connectivityMonitor = FlutterConnectivityMonitor()
-    ..authSessionManager = FlutterAuthSessionManager();
+    client = Client(serverUrl)
+      ..connectivityMonitor = FlutterConnectivityMonitor()
+      ..authSessionManager = FlutterAuthSessionManager();
 
-  globalSocietyState = SocietyState(client: client);
+    globalSocietyState = SocietyState(
+      dataSource: ServerDataSource(client),
+      client: client,
+    );
+  }
+
   realtimeService = RealtimeService(
     client: client,
     state: globalSocietyState,
