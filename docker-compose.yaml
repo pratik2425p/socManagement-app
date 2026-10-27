@@ -1,0 +1,90 @@
+name: society_server
+
+services:
+  # Primary Development PostgreSQL database (with pgvector)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: society_server-postgres-1
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: society
+      POSTGRES_PASSWORD: "Z0sAePlN-k54pVLdH9GD_WWsjdLREaBa"
+    volumes:
+      - society_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d society"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Primary Development Redis Cache
+  redis:
+    image: redis:6.2.6
+    container_name: society_server-redis-1
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "8xQQ6wKZ8c2RKgld4U_QOJj2_3Tvf0nh"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "8xQQ6wKZ8c2RKgld4U_QOJj2_3Tvf0nh", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Automated Test PostgreSQL database
+  postgres_test:
+    image: pgvector/pgvector:pg16
+    container_name: society_server-postgres_test-1
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: society_test
+      POSTGRES_PASSWORD: "9FrXOUNunw-ofTjLIZmabZkHeC4w310z"
+    volumes:
+      - society_test_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Automated Test Redis Cache
+  redis_test:
+    image: redis:6.2.6
+    container_name: society_server-redis_test-1
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "D00bBtKFkNl8jJPU_u4Tx0QnxVDreenJ"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    restart: unless-stopped
+
+  # Serverpod Monolith Server (Optional Containerized Mode: docker compose --profile full up)
+  server:
+    build:
+      context: .
+      dockerfile: society_server/Dockerfile
+    container_name: society_server-api-1
+    profiles:
+      - full
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+    environment:
+      runmode: development
+      serverid: default
+      logging: normal
+      role: monolith
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  society_data:
+  society_test_data:
