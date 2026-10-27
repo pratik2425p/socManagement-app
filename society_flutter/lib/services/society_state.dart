@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:society_client/society_client.dart';
 import '../core/config/app_config.dart';
@@ -11,7 +10,8 @@ import 'data/server_data_source.dart';
 import 'data/society_data_source.dart';
 
 class SocietyState extends ChangeNotifier {
-  final SocietyDataSource dataSource;
+  SocietyDataSource _dataSource;
+  SocietyDataSource get dataSource => _dataSource;
   final Client? _client;
 
   Client get client =>
@@ -25,6 +25,15 @@ class SocietyState extends ChangeNotifier {
 
   bool get hasConnectionError => _hasConnectionError;
   String? get connectionErrorMessage => _connectionErrorMessage;
+  bool get isDemoActive => AppConfig.isDemoMode || _dataSource is DemoDataSource;
+
+  void enableDemoMode() {
+    if (kReleaseMode) return;
+    _dataSource = DemoDataSource();
+    _hasConnectionError = false;
+    _connectionErrorMessage = null;
+    fetchInitialData();
+  }
 
   UserRole _currentRole = UserRole.chairman;
   String _societyName = '';
@@ -49,7 +58,7 @@ class SocietyState extends ChangeNotifier {
   SocietyState({
     SocietyDataSource? dataSource,
     Client? client,
-  })  : dataSource = dataSource ??
+  })  : _dataSource = dataSource ??
             (AppConfig.isDemoMode
                 ? DemoDataSource()
                 : (client != null ? ServerDataSource(client) : DemoDataSource())),
@@ -174,13 +183,13 @@ class SocietyState extends ChangeNotifier {
       ]);
 
       // If demo mode, auto-login with Aarav Mehta (Resident) so it is immediately interactive
-      if (AppConfig.isDemoMode && !_isLoggedIn && _users.isNotEmpty) {
+      if (isDemoActive && !_isLoggedIn && _users.isNotEmpty) {
         setActiveUser(_users.first);
       }
       _hasConnectionError = false;
     } catch (e) {
       debugPrint('[SocietyState] API Fetch Error: $e');
-      if (!AppConfig.isDemoMode) {
+      if (!isDemoActive) {
         _hasConnectionError = true;
         _connectionErrorMessage =
             'Unable to connect to SocietyOS server ($e). Please verify serverpod server is running or run with DEMO_MODE=true.';
@@ -203,10 +212,33 @@ class SocietyState extends ChangeNotifier {
       _currentFlat = user.flatNumber!;
     }
     try {
-      final soc = await client.society.getSocietyById(user.societyId);
-      if (soc != null) {
+      if (isDemoActive) {
+        final soc = _societies.firstWhere(
+          (s) => s.id == user.societyId,
+          orElse: () => _societies.isNotEmpty
+              ? _societies.first
+              : Society(
+                  id: user.societyId,
+                  name: 'Grand Horizon Heights CHS',
+                  code: 'GHH',
+                  address: 'Sector 14, Palm Avenue',
+                  city: 'Pune',
+                  state: 'Maharashtra',
+                  pincode: '411038',
+                  totalFlats: 120,
+                  subscriptionPlan: 'Pro',
+                  subscriptionStatus: 'active',
+                  createdAt: DateTime.now(),
+                ),
+        );
         _currentSociety = soc;
         _societyName = soc.name;
+      } else {
+        final soc = await client.society.getSocietyById(user.societyId);
+        if (soc != null) {
+          _currentSociety = soc;
+          _societyName = soc.name;
+        }
       }
     } catch (_) {}
     notifyListeners();

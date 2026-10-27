@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/society_state.dart';
 import '../core.dart';
@@ -75,21 +76,65 @@ class _ConnectionErrorViewState extends State<ConnectionErrorView> {
                     textAlign: TextAlign.center,
                   ),
                   AppSpacing.vGapLg,
-                  AppButton.primary(
-                    label: 'Retry Connection',
-                    icon: Icons.refresh_rounded,
-                    isLoading: _isRetrying,
-                    onPressed: _isRetrying ? null : _handleRetry,
-                  ),
-                  AppSpacing.vGapMd,
-                  Text(
-                    'Tip: Run with "--dart-define=DEMO_MODE=true" to test all features completely offline without a server.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                  if (!kReleaseMode) ...[
+                    AppButton.primary(
+                      label: 'Continue in Offline Demo Mode',
+                      icon: Icons.play_circle_fill_rounded,
+                      isFullWidth: true,
+                      onPressed: () => widget.state.enableDemoMode(),
                     ),
-                    textAlign: TextAlign.center,
+                    AppSpacing.vGapSm,
+                    AppButton.outline(
+                      label: 'Retry Server Connection',
+                      icon: Icons.refresh_rounded,
+                      isFullWidth: true,
+                      isLoading: _isRetrying,
+                      onPressed: _isRetrying ? null : _handleRetry,
+                    ),
+                  ] else ...[
+                    AppButton.primary(
+                      label: 'Retry Connection',
+                      icon: Icons.refresh_rounded,
+                      isFullWidth: true,
+                      isLoading: _isRetrying,
+                      onPressed: _isRetrying ? null : _handleRetry,
+                    ),
+                  ],
+                  AppSpacing.vGapLg,
+                  Container(
+                    padding: AppSpacing.insetAllMd,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surfaceElevatedDark : const Color(0xFFF8FAFC),
+                      borderRadius: AppRadii.borderMd,
+                      border: Border.all(
+                        color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded, size: 14, color: AppColors.accentTeal),
+                            AppSpacing.hGapXs,
+                            Text(
+                              'How to run SocietyOS:',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        AppSpacing.vGapXs,
+                        Text(
+                          '• Offline Demo (Recommended): Click the button above or launch with "--dart-define=DEMO_MODE=true" to explore all 5 personas without a server.\n'
+                          '• Local Backend: Start Docker and run "dart run bin/main.dart" in society_server.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            height: 1.4,
+                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

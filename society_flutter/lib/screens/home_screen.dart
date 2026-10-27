@@ -114,13 +114,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Direct unauthenticated users to the SMS OTP Sign In Screen
     if (!state.isLoggedIn) {
-      if (state.hasConnectionError && !AppConfig.isDemoMode) {
+      if (state.hasConnectionError && !state.isDemoActive) {
         return ConnectionErrorView(state: state);
       }
       return SignInScreen(state: state);
     }
 
-    if (state.hasConnectionError && !AppConfig.isDemoMode) {
+    if (state.hasConnectionError && !state.isDemoActive) {
       return ConnectionErrorView(state: state);
     }
 
