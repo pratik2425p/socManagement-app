@@ -124,11 +124,10 @@ class RealtimeService with WidgetsBindingObserver {
     _gateBellSub = null;
 
     final flat = state.currentFlat.trim();
-    final isResident = state.currentRole == UserRole.resident;
 
-    // Residents require an assigned flat number to subscribe to gate bell
-    if (isResident && flat.isEmpty) {
-      debugPrint('[RealtimeService] Resident does not have an assigned flat; skipping gate bell stream.');
+    // Gate bell stream is flat-specific; requires an assigned flat number
+    if (flat.isEmpty) {
+      debugPrint('[RealtimeService] No flat assigned for current user; skipping gate bell stream.');
       return;
     }
 

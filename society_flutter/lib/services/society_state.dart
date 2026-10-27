@@ -160,31 +160,39 @@ class SocietyState extends ChangeNotifier {
         _currentSocietyId = socs.first.id ?? 1;
       }
 
-      await Future.wait([
-        _loadUsers(),
-        _loadBuildings(),
-        _loadFlats(),
-        _loadInvitations(),
-        _loadBills(),
-        _loadVisitors(),
-        _loadVouchers(),
-        _loadLedger(),
-        _loadComplaints(),
-        _loadNotices(),
-        _loadDocuments(),
-        _loadMeetingMinutes(),
-        _loadPolls(),
-        _loadSosAlerts(),
-        _loadSubscriptions(),
-        _loadAmenities(),
-        _loadAmenityBookings(),
-        _loadAuditLogs(),
-        _loadTenantNocs(),
-      ]);
+      if (isDemoActive || _isLoggedIn) {
+        await Future.wait([
+          _loadUsers(),
+          _loadBuildings(),
+          _loadFlats(),
+          _loadInvitations(),
+          _loadBills(),
+          _loadVisitors(),
+          _loadVouchers(),
+          _loadLedger(),
+          _loadComplaints(),
+          _loadNotices(),
+          _loadDocuments(),
+          _loadMeetingMinutes(),
+          _loadPolls(),
+          _loadSosAlerts(),
+          _loadSubscriptions(),
+          _loadAmenities(),
+          _loadAmenityBookings(),
+          _loadAuditLogs(),
+          _loadTenantNocs(),
+        ]);
 
-      // If demo mode, auto-login with Aarav Mehta (Resident) so it is immediately interactive
-      if (isDemoActive && !_isLoggedIn && _users.isNotEmpty) {
-        setActiveUser(_users.first);
+        // If demo mode, auto-login with Aarav Mehta (Resident) so it is immediately interactive
+        if (isDemoActive && !_isLoggedIn && _users.isNotEmpty) {
+          setActiveUser(_users.first);
+        }
+      } else {
+        // Pre-auth startup: only load public metadata. Protected collections load upon login.
+        await Future.wait([
+          _loadBuildings(),
+          _loadFlats(),
+        ]);
       }
       _hasConnectionError = false;
     } catch (e) {
