@@ -36,6 +36,7 @@ class _ConnectionErrorViewState extends State<ConnectionErrorView> {
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: Center(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),

@@ -7,6 +7,7 @@ export 'theme/app_gradients.dart';
 export 'theme/app_typography.dart';
 export 'theme/app_theme.dart';
 export 'theme/app_motion.dart';
+export 'theme/app_scroll_behavior.dart';
 
 // Core Reusable Components
 export 'widgets/app_button.dart';

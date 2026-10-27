@@ -27,6 +27,7 @@ class PhoneInputView extends StatelessWidget {
 
     return Center(
       child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xl),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),

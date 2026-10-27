@@ -19,7 +19,7 @@ class SaasAdminDashboard extends StatelessWidget {
       onRefresh: () => state.loadSocieties(),
       child: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         child: ResponsiveContainer(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

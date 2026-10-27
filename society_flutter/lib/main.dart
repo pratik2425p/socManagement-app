@@ -4,6 +4,7 @@ import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 import 'core/config/app_config.dart';
+import 'core/theme/app_scroll_behavior.dart';
 import 'core/utils/navigation_service.dart';
 import 'services/data/demo_data_source.dart';
 import 'services/data/server_data_source.dart';
@@ -51,6 +52,7 @@ class SocietyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scrollBehavior: const AppScrollBehavior(),
       navigatorKey: NavigationService.navigatorKey,
       title: 'Society Management SaaS',
       debugShowCheckedModeBanner: false,

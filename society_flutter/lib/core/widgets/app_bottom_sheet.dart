@@ -136,6 +136,9 @@ class AppBottomSheet extends StatelessWidget {
           // Body
           Flexible(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               padding: contentPadding,
               child: child,
             ),

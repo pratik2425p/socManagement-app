@@ -15,7 +15,7 @@ class AccountantDashboard extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => state.fetchInitialData(),
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: AppSpacing.screenPadding,
         child: ResponsiveContainer(
           child: Column(

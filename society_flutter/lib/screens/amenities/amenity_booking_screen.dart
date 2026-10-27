@@ -100,7 +100,7 @@ class _AmenityBookingScreenState extends State<AmenityBookingScreen> {
           await widget.state.loadAmenityBookings();
         },
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: AppSpacing.screenPadding,
           child: ResponsiveContainer(
             child: Column(
