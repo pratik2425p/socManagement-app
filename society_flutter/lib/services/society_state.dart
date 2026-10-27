@@ -466,6 +466,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadUsers() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _users = await dataSource.getUsers(_currentSocietyId);
     } catch (e) {
@@ -474,6 +475,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadBills() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _bills = await dataSource.getBills(_currentSocietyId);
     } catch (e) {
@@ -482,6 +484,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadVisitors() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _visitors = await dataSource.getVisitors();
     } catch (e) {
@@ -490,6 +493,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadVouchers() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _vouchers = await dataSource.getVouchers(_currentSocietyId);
     } catch (e) {
@@ -498,6 +502,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadLedger() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _ledgerEntries = await dataSource.getLedgerEntries(_currentSocietyId);
     } catch (e) {
@@ -506,6 +511,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadComplaints() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _complaints = await dataSource.getComplaints();
     } catch (e) {
@@ -514,6 +520,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadNotices() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _notices = await dataSource.getNotices();
     } catch (e) {
@@ -522,6 +529,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadDocuments() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _documents = await dataSource.getDocuments(limit: 50, offset: 0);
     } catch (e) {
@@ -530,6 +538,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadMeetingMinutes() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _meetingMinutes = await dataSource.getMeetingMinutes(limit: 50, offset: 0);
     } catch (e) {
@@ -538,6 +547,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadPolls() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _polls = await dataSource.getPolls(_currentSocietyId);
       for (final p in _polls) {
@@ -551,6 +561,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadSosAlerts() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _sosAlerts = await dataSource.getActiveSosAlerts();
     } catch (e) {
@@ -559,6 +570,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadSubscriptions() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _subscriptions = await dataSource.getAllSubscriptions();
       _saasMetrics = await dataSource.getMetricSummary();
@@ -568,6 +580,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadAmenities() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _amenities = await dataSource.getAmenities(limit: 50, offset: 0);
     } catch (e) {
@@ -576,6 +589,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadAmenityBookings() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _amenityBookings = await dataSource.getAmenityBookings(limit: 50, offset: 0);
     } catch (e) {
@@ -584,6 +598,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadAuditLogs([AuditCategory? category]) async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       final logs = await dataSource.getAuditLogs(limit: 50, offset: 0);
       _auditLogs.clear();
@@ -594,6 +609,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadTenantNocs([NocStatus? status]) async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       final nocs = await dataSource.getTenantNocs(limit: 50, offset: 0);
       _tenantNocs.clear();
@@ -684,6 +700,7 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> _loadInvitations() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     try {
       _invitations = await dataSource.getInvitations(_currentSocietyId);
     } catch (e) {
@@ -1548,6 +1565,7 @@ class SocietyState extends ChangeNotifier {
 
   /// Refresh gate visitors and SOS alerts on reconnect / app resume
   Future<void> refreshRealtimeData() async {
+    if (!_isLoggedIn && !isDemoActive) return;
     await Future.wait([
       _loadVisitors(),
       _loadSosAlerts(),

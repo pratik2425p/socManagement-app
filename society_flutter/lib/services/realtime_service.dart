@@ -41,6 +41,7 @@ class RealtimeService with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      if (!this.state.isLoggedIn && !this.state.isDemoActive) return;
       debugPrint('[RealtimeService] App resumed. Re-verifying subscriptions and refreshing state.');
       _syncSubscriptions();
       this.state.refreshRealtimeData();
