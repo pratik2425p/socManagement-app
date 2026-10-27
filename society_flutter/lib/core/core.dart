@@ -40,5 +40,6 @@ export 'widgets/sparkline_chart.dart';
 export 'widgets/qr_code_widget.dart';
 export 'services/qr_pass_service.dart';
 export 'utils/app_formatters.dart';
+export 'utils/app_logger.dart';
 export 'config/app_config.dart';
 export 'utils/pdf_receipt_generator.dart';

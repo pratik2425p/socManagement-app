@@ -106,6 +106,7 @@ class AuthEndpoint extends Endpoint {
       otp: otp,
       expiry: const Duration(minutes: 5),
     );
+    session.log('[SMS OTP] Dispatched code: $otp to +91 $normalizedPhone');
 
     return OtpSendResult(
       success: true,

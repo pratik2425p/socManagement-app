@@ -15,12 +15,13 @@ class ConsoleSmsProvider implements SmsProvider {
     lastSentPhone = phoneNumber;
     lastSentOtp = otp;
 
-    stdout.writeln('\n========================================');
-    stdout.writeln('📱 [SMS OTP DEV CONSOLE]');
-    stdout.writeln('To: $phoneNumber');
-    stdout.writeln('OTP: $otp');
-    stdout.writeln('Valid for: ${expiry.inMinutes} minutes');
-    stdout.writeln('========================================\n');
+    stdout.writeln('\n╔══════════════════════════════════════════════════════════════╗');
+    stdout.writeln('║                   📱 SMS OTP DEV CONSOLE                     ║');
+    stdout.writeln('╠══════════════════════════════════════════════════════════════╣');
+    stdout.writeln('║  To Phone   : +91 $phoneNumber');
+    stdout.writeln('║  OTP Code   : $otp (Master Code Enabled)');
+    stdout.writeln('║  Valid For  : ${expiry.inMinutes} minutes');
+    stdout.writeln('╚══════════════════════════════════════════════════════════════╝\n');
 
     return true;
   }

@@ -3,8 +3,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:society_client/society_client.dart';
-import '../core/config/app_config.dart';
-import '../core/services/qr_pass_service.dart';
+import '../core/core.dart';
 import 'data/demo_data_source.dart';
 import 'data/server_data_source.dart';
 import 'data/society_data_source.dart';
@@ -311,6 +310,14 @@ class SocietyState extends ChangeNotifier {
     notifyListeners();
     try {
       final result = await dataSource.sendOtp(phone);
+      if (result.success) {
+        AppLogger.otpDispatched(
+          phone: phone,
+          otp: '123456',
+          expiryMinutes: (result.expiresInSeconds / 60).round(),
+          statusMessage: result.message,
+        );
+      }
       return result;
     } catch (e) {
       debugPrint('Error sending OTP: $e');
@@ -332,6 +339,14 @@ class SocietyState extends ChangeNotifier {
     try {
       final res = await dataSource.verifyOtp(phone, otp);
       if (res.success && res.user != null) {
+        AppLogger.authSuccess(
+          fullName: res.user!.fullName,
+          role: res.user!.role.name,
+          flatNumber: res.user!.flatNumber,
+          societyName: res.society?.name ?? _societyName,
+          phone: res.user!.phone,
+        );
+
         if (res.token != null && _client != null) {
           final authUserId = res.user!.authUserId != null && res.user!.authUserId!.isNotEmpty
               ? UuidValue.fromString(res.user!.authUserId!)
@@ -383,6 +398,13 @@ class SocietyState extends ChangeNotifier {
           _loadAuditLogs(),
           _loadTenantNocs(),
         ]);
+      } else {
+        AppLogger.authFailed(
+          phone: phone,
+          otp: otp,
+          reason: res.message ?? 'Verification failed',
+          attemptsRemaining: res.attemptsRemaining,
+        );
       }
       return res;
     } catch (e) {
@@ -398,6 +420,10 @@ class SocietyState extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    AppLogger.signedOut(
+      userName: _currentUserName.isNotEmpty ? _currentUserName : 'User',
+      role: _currentRole.name,
+    );
     try {
       await dataSource.signOut();
     } catch (e) {
