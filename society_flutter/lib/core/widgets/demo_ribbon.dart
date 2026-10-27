@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:society_client/society_client.dart';
 import '../../services/data/demo_data_source.dart';
 import '../../services/society_state.dart';
-import '../core.dart';
+import '../config/app_config.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
+import '../theme/app_spacing.dart';
+import 'app_bottom_sheet.dart';
+import 'app_button.dart';
+import 'app_section_header.dart';
+import 'app_snackbar.dart';
 
 /// Floating/AppBar Demo Ribbon indicating the app is operating in local mock mode.
 /// Provides instant access to persona switching and real-time event simulation.

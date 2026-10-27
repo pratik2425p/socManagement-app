@@ -1,7 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/society_state.dart';
-import '../core.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
+import '../theme/app_spacing.dart';
+import 'app_button.dart';
+import 'app_card.dart';
 
 /// Friendly connection error state with retry.
 /// Shown when DEMO_MODE=false and the backend server is unreachable.

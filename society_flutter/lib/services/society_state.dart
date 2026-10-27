@@ -597,6 +597,7 @@ class SocietyState extends ChangeNotifier {
 
   Future<void> _loadSubscriptions() async {
     if (!_isLoggedIn && !isDemoActive) return;
+    if (_currentRole != UserRole.admin && !isDemoActive) return;
     try {
       _subscriptions = await dataSource.getAllSubscriptions();
       _saasMetrics = await dataSource.getMetricSummary();
@@ -686,6 +687,7 @@ class SocietyState extends ChangeNotifier {
   Future<void> switchSociety(Society society) async {
     _currentSocietyId = society.id ?? 1;
     _societyName = society.name;
+    if (!_isLoggedIn && !isDemoActive) return;
     await Future.wait([
       _loadUsers(),
       _loadBuildings(),
