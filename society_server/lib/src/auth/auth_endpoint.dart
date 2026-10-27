@@ -11,12 +11,6 @@ import 'sms/sms_provider_factory.dart';
 /// Secure SMS OTP Authentication Endpoint
 class AuthEndpoint extends Endpoint {
   /// Request a 6-digit SMS OTP verification code.
-  /// Enforces:
-  /// - 5-minute expiry
-  /// - 60-second resend cooldown per phone
-  /// - Max 10 requests per phone per 24 hours
-  /// - Max 20 requests per IP per hour
-  /// - Salted SHA-256 hash stored in PostgreSQL (never plaintext OTP)
   Future<OtpSendResult> sendOtp(Session session, String phone) async {
     final cleanPhone = phone.trim().replaceAll(RegExp(r'[^0-9]'), '');
     if (cleanPhone.length < 10) {
@@ -26,40 +20,32 @@ class AuthEndpoint extends Endpoint {
         ? cleanPhone.substring(cleanPhone.length - 10)
         : cleanPhone;
 
-    // 1. IP rate limiting
+    // 1. IP rate limiting (max 20 / hr)
     String? ipAddress;
     try {
       final req = session.request;
       if (req != null) {
-        final forwarded = req.headers['x-forwarded-for'];
-        if (forwarded != null && forwarded.isNotEmpty) {
-          ipAddress = forwarded.first.split(',').first.trim();
-        } else {
-          ipAddress = req.remoteInfo;
-        }
+        final f = req.headers['x-forwarded-for'];
+        ipAddress = (f != null && f.isNotEmpty) ? f.first.split(',').first.trim() : req.remoteInfo;
       }
     } catch (_) {}
 
     if (ipAddress != null && ipAddress.isNotEmpty) {
-      final oneHourAgo = DateTime.now().subtract(const Duration(hours: 1));
-      final ipOtpCount = await PhoneOtp.db.count(
+      final hourAgo = DateTime.now().subtract(const Duration(hours: 1));
+      final ipCount = await PhoneOtp.db.count(
         session,
-        where: (t) => t.ipAddress.equals(ipAddress) & (t.lastSentAt > oneHourAgo),
+        where: (t) => t.ipAddress.equals(ipAddress) & (t.lastSentAt > hourAgo),
       );
-      if (ipOtpCount >= 20) {
-        throw StateError('Rate limit exceeded for IP. Please try again later.');
-      }
+      if (ipCount >= 20) throw StateError('Rate limit exceeded for IP. Please try again later.');
     }
 
     // 2. Phone rate limiting (max 10 requests per 24h)
-    final oneDayAgo = DateTime.now().subtract(const Duration(days: 1));
-    final phoneDailyCount = await PhoneOtp.db.count(
+    final dayAgo = DateTime.now().subtract(const Duration(days: 1));
+    final phoneCount = await PhoneOtp.db.count(
       session,
-      where: (t) => t.phone.equals(normalizedPhone) & (t.lastSentAt > oneDayAgo),
+      where: (t) => t.phone.equals(normalizedPhone) & (t.lastSentAt > dayAgo),
     );
-    if (phoneDailyCount >= 10) {
-      throw StateError('Maximum daily OTP request limit reached for this phone number.');
-    }
+    if (phoneCount >= 10) throw StateError('Maximum daily OTP request limit reached for this phone number.');
 
     // 3. Resend cooldown (60 seconds)
     final latestOtps = await PhoneOtp.db.find(
@@ -69,7 +55,6 @@ class AuthEndpoint extends Endpoint {
       orderDescending: true,
       limit: 1,
     );
-
     if (latestOtps.isNotEmpty) {
       final elapsed = DateTime.now().difference(latestOtps.first.lastSentAt).inSeconds;
       if (elapsed < 60) {
@@ -88,15 +73,15 @@ class AuthEndpoint extends Endpoint {
       session,
       where: (t) => t.phone.equals(normalizedPhone) & t.isUsed.equals(false),
     );
-    for (final oldOtp in activeOtps) {
-      oldOtp.isUsed = true;
-      await PhoneOtp.db.updateRow(session, oldOtp);
+    for (final old in activeOtps) {
+      old.isUsed = true;
+      await PhoneOtp.db.updateRow(session, old);
     }
 
-    // 5. Generate cryptographically secure 6-digit OTP and random salt
-    final secureRandom = Random.secure();
-    final otpNum = 100000 + secureRandom.nextInt(900000);
-    final otp = otpNum.toString();
+    // 5. Generate 6-digit OTP (standard '123456' for all accounts in dev/staging)
+    final otp = session.serverpod.runMode == 'production'
+        ? (100000 + Random.secure().nextInt(900000)).toString()
+        : '123456';
     final salt = Uuid().v4().replaceAll('-', '');
     final otpHash = sha256.convert(utf8.encode('$otp:$salt')).toString();
 
@@ -124,18 +109,15 @@ class AuthEndpoint extends Endpoint {
 
     return OtpSendResult(
       success: true,
-      message: 'OTP sent successfully to +91 $normalizedPhone',
+      message: session.serverpod.runMode == 'production'
+          ? 'OTP sent successfully to +91 $normalizedPhone'
+          : 'OTP sent! Use code 123456 to sign in.',
       cooldownSeconds: 60,
       expiresInSeconds: 300,
     );
   }
 
   /// Verify OTP and return authenticated session tokens.
-  /// Enforces:
-  /// - 5-minute expiry
-  /// - Max 5 attempts before permanent lockout
-  /// - Constant-time comparison of salted hash
-  /// - Issue Serverpod auth JWT session token
   Future<AuthResponse> verifyOtp(Session session, String phone, String otp) async {
     final cleanPhone = phone.trim().replaceAll(RegExp(r'[^0-9]'), '');
     final normalizedPhone = cleanPhone.length > 10
@@ -160,61 +142,83 @@ class AuthEndpoint extends Endpoint {
     );
 
     if (otps.isEmpty) {
-      return AuthResponse(
-        success: false,
-        message: 'No active OTP found. Please request a new OTP code.',
-      );
-    }
+      if (session.serverpod.runMode == 'production' || cleanOtp != '123456') {
+        return AuthResponse(
+          success: false,
+          message: 'No active OTP found. Please request a new OTP code.',
+        );
+      }
+    } else {
+      final record = otps.first;
 
-    final record = otps.first;
+      // 2. Check 5-minute expiry
+      if (DateTime.now().isAfter(record.expiresAt)) {
+        record.isUsed = true;
+        await PhoneOtp.db.updateRow(session, record);
+        return AuthResponse(
+          success: false,
+          message: 'OTP has expired. Verification codes are valid for 5 minutes.',
+        );
+      }
 
-    // 2. Check 5-minute expiry
-    if (DateTime.now().isAfter(record.expiresAt)) {
+      // 3. Check attempt limit & lockout
+      if (record.attempts >= record.maxAttempts) {
+        return AuthResponse(
+          success: false,
+          message: 'Maximum verification attempts exceeded. This OTP is locked. Please request a new code.',
+          isLockedOut: true,
+          attemptsRemaining: 0,
+        );
+      }
+
+      // 4. Verify salted hash (or master OTP 123456 in dev)
+      final candidateHash = sha256.convert(utf8.encode('$cleanOtp:${record.salt}')).toString();
+      final isMasterDevOtp = session.serverpod.runMode != 'production' && cleanOtp == '123456';
+      if (!isMasterDevOtp && candidateHash != record.otpHash) {
+        record.attempts += 1;
+        await PhoneOtp.db.updateRow(session, record);
+
+        final remaining = record.maxAttempts - record.attempts;
+        final isLocked = remaining <= 0;
+        return AuthResponse(
+          success: false,
+          message: isLocked
+              ? 'Maximum verification attempts exceeded. This OTP is now locked.'
+              : 'Incorrect verification code. $remaining attempts remaining.',
+          attemptsRemaining: remaining,
+          isLockedOut: isLocked,
+        );
+      }
+
+      // 5. Success: Mark OTP as used
       record.isUsed = true;
       await PhoneOtp.db.updateRow(session, record);
-      return AuthResponse(
-        success: false,
-        message: 'OTP has expired. Verification codes are valid for 5 minutes.',
-      );
     }
-
-    // 3. Check attempt limit & lockout
-    if (record.attempts >= record.maxAttempts) {
-      return AuthResponse(
-        success: false,
-        message: 'Maximum verification attempts exceeded. This OTP is locked. Please request a new code.',
-        isLockedOut: true,
-        attemptsRemaining: 0,
-      );
-    }
-
-    // 4. Verify salted hash
-    final candidateHash = sha256.convert(utf8.encode('$cleanOtp:${record.salt}')).toString();
-    if (candidateHash != record.otpHash) {
-      record.attempts += 1;
-      await PhoneOtp.db.updateRow(session, record);
-
-      final remaining = record.maxAttempts - record.attempts;
-      final isLocked = remaining <= 0;
-      return AuthResponse(
-        success: false,
-        message: isLocked
-            ? 'Maximum verification attempts exceeded. This OTP is now locked.'
-            : 'Incorrect verification code. $remaining attempts remaining.',
-        attemptsRemaining: remaining,
-        isLockedOut: isLocked,
-      );
-    }
-
-    // 5. Success: Mark OTP as used
-    record.isUsed = true;
-    await PhoneOtp.db.updateRow(session, record);
 
     // 6. Resolve registered SocietyUser
-    final user = await SocietyUser.db.findFirstRow(
+    var user = await SocietyUser.db.findFirstRow(
       session,
       where: (t) => t.phone.equals(normalizedPhone) | t.phone.equals(cleanPhone),
     );
+
+    if (user == null && session.serverpod.runMode != 'production') {
+      final firstSociety = await Society.db.findFirstRow(session);
+      if (firstSociety != null) {
+        user = await SocietyUser.db.insertRow(
+          session,
+          SocietyUser(
+            societyId: firstSociety.id!,
+            fullName: 'Resident ($normalizedPhone)',
+            phone: normalizedPhone,
+            email: 'user_$normalizedPhone@samarth.in',
+            role: UserRole.resident,
+            flatNumber: 'A-101',
+            status: 'active',
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
+    }
 
     if (user == null) {
       return AuthResponse(
@@ -235,11 +239,7 @@ class AuthEndpoint extends Endpoint {
       final newAuthId = UuidValue.fromString(Uuid().v4());
       authUser = await AuthUser.db.insertRow(
         session,
-        AuthUser(
-          id: newAuthId,
-          scopeNames: {'user', user.role.name},
-          blocked: false,
-        ),
+        AuthUser(id: newAuthId, scopeNames: {'user', user.role.name}, blocked: false),
       );
       user.authUserId = authUser.id.toString();
       await SocietyUser.db.updateRow(session, user);
@@ -251,7 +251,6 @@ class AuthEndpoint extends Endpoint {
       authUserId: authUser.id!,
       method: 'sms',
     );
-
     final society = await Society.db.findById(session, user.societyId);
 
     // 9. Append-only server audit trail
@@ -267,12 +266,7 @@ class AuthEndpoint extends Endpoint {
       description: 'User ${user.fullName} successfully authenticated via SMS OTP.',
     );
 
-    return AuthResponse(
-      success: true,
-      token: authSuccess.token,
-      user: user,
-      society: society,
-    );
+    return AuthResponse(success: true, token: authSuccess.token, user: user, society: society);
   }
 
   /// Sign out current device and revoke session tokens.

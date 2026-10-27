@@ -266,11 +266,11 @@ class OtpVerificationView extends StatelessWidget {
                 AppSpacing.vGapLg,
                 Center(
                   child: Text(
-                    'Local Dev: Check server terminal for OTP log',
+                    'Dev OTP: 123456 (valid for all accounts)',
                     style: TextStyle(
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.accentTeal,
                     ),
                   ),
                 ),
